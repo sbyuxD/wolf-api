@@ -4,9 +4,26 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import chokidar from "chokidar";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const PLUGINS_DIR = path.resolve(__dirname, "plugins");
-
 const CREATOR = "sbyuxD";
+
+export const getPluginsDir = () => {
+  const possibleDirs = [
+    path.join(process.cwd(), "src", "plugins"),
+    path.join(process.cwd(), "plugins"),
+    path.resolve(__dirname, "plugins"),
+    path.resolve(__dirname, "../src/plugins")
+  ];
+
+  for (const dir of possibleDirs) {
+    if (fs.existsSync(dir)) {
+      return dir;
+    }
+  }
+
+  return possibleDirs[0];
+};
+
+export const plugins = new Map();
 
 export const sendSuccess = (res, result = null, statusCode = 200) => {
   return res.status(statusCode).json({
@@ -81,42 +98,41 @@ export const validateParams = (schema, req) => {
   return null;
 };
 
-export const plugins = new Map();
-
-const parsePluginPath = (filePath) => {
+const parsePluginPath = (filePath, baseDir) => {
   const fullPath = path.resolve(filePath);
-  const rel = path.relative(PLUGINS_DIR, fullPath).replace(/\\/g, "/");
+  const rel = path.relative(baseDir, fullPath).split(path.sep).join("/");
   const parts = rel.split("/");
 
   if (parts.length === 1) {
-    const name = parts[0].replace(/\.js$/, "").toLowerCase();
+    const name = parts[0].replace(/\.(js|mjs)$/, "").toLowerCase();
     return { category: "general", name, routePath: `/general/${name}` };
   }
 
   const category = parts[0].toLowerCase();
-  const name = parts.slice(1).join("/").replace(/\.js$/, "").toLowerCase();
+  const name = parts.slice(1).join("/").replace(/\.(js|mjs)$/, "").toLowerCase();
   const routePath = `/${category}/${name}`;
 
   return { category, name, routePath };
 };
 
 export const loadPlugin = async (filePath) => {
-  if (!filePath.endsWith(".js")) return;
-  const parsed = parsePluginPath(filePath);
-  if (!parsed) return;
+  if (!filePath.endsWith(".js") && !filePath.endsWith(".mjs")) return null;
+  const baseDir = getPluginsDir();
+  const parsed = parsePluginPath(filePath, baseDir);
+  if (!parsed) return null;
 
   try {
     const fullPath = path.resolve(filePath);
     const fileUrl = `${pathToFileURL(fullPath).href}?v=${Date.now()}`;
     const module = await import(fileUrl);
-    const handler = module.default;
+    const handler = module.default || module;
 
     if (!handler || typeof handler.execute !== "function") {
-      console.warn(`[WARN] ${filePath} tidak memiliki execute()`);
-      return;
+      console.warn(`[WARN] ${filePath} tidak mengekspor execute()`);
+      return null;
     }
 
-    plugins.set(parsed.routePath, {
+    const pluginObj = {
       name: handler.name || parsed.name,
       category: handler.category || parsed.category,
       path: parsed.routePath,
@@ -125,16 +141,20 @@ export const loadPlugin = async (filePath) => {
       params: handler.params || {},
       cache: typeof handler.cache === "number" ? handler.cache : null,
       execute: handler.execute
-    });
+    };
 
-    console.log(`[LOADED] ${parsed.routePath}`);
+    plugins.set(parsed.routePath, pluginObj);
+    console.log(`[✓] LOADED: ${pluginObj.method.join("/")} ${parsed.routePath}`);
+    return pluginObj;
   } catch (err) {
-    console.error(`[ERROR] Gagal memuat plugin ${filePath}:`, err.message);
+    console.error(`[ㄨ] Gagal memuat plugin ${filePath}:`, err.message);
+    return null;
   }
 };
 
 export const unloadPlugin = (filePath) => {
-  const parsed = parsePluginPath(filePath);
+  const baseDir = getPluginsDir();
+  const parsed = parsePluginPath(filePath, baseDir);
   if (parsed && plugins.has(parsed.routePath)) {
     plugins.delete(parsed.routePath);
     console.log(`[UNLOADED] ${parsed.routePath}`);
@@ -150,7 +170,7 @@ const getFiles = (dir) => {
     const fullPath = path.join(dir, item.name);
     if (item.isDirectory()) {
       results = results.concat(getFiles(fullPath));
-    } else if (item.isFile() && item.name.endsWith(".js")) {
+    } else if (item.isFile() && (item.name.endsWith(".js") || item.name.endsWith(".mjs"))) {
       results.push(fullPath);
     }
   }
@@ -159,19 +179,42 @@ const getFiles = (dir) => {
 };
 
 export const loadAllPlugins = async () => {
-  if (!fs.existsSync(PLUGINS_DIR)) {
-    fs.mkdirSync(PLUGINS_DIR, { recursive: true });
+  const dir = getPluginsDir();
+  if (!fs.existsSync(dir)) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+    } catch {}
     return;
   }
 
-  const files = getFiles(PLUGINS_DIR);
+  const files = getFiles(dir);
   for (const file of files) {
     await loadPlugin(file);
   }
 };
 
+export const resolveSingleRouteOnDemand = async (category, pluginName) => {
+  const baseDir = getPluginsDir();
+  const possiblePaths = [
+    path.join(baseDir, category, `${pluginName}.js`),
+    path.join(baseDir, category, `${pluginName}.mjs`),
+    path.join(baseDir, `${pluginName}.js`)
+  ];
+
+  for (const filePath of possiblePaths) {
+    if (fs.existsSync(filePath)) {
+      return await loadPlugin(filePath);
+    }
+  }
+
+  return null;
+};
+
 export const watchPlugins = () => {
-  const watcher = chokidar.watch(PLUGINS_DIR, {
+  const dir = getPluginsDir();
+  if (!fs.existsSync(dir)) return;
+
+  const watcher = chokidar.watch(dir, {
     ignoreInitial: true,
     persistent: true,
     awaitWriteFinish: {
