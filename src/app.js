@@ -12,6 +12,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.resolve(__dirname, "../public")));
+app.use("/media", express.static(path.resolve(__dirname, "media")));
 
 let initialized = false;
 app.use(async (req, res, next) => {
