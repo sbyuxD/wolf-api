@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sbyuxD — REST API</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#faf5ff',
+              100: '#f3e8ff',
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea',
+              glow: '#8b5cf6',
+              dark: '#08070d',
+              surface: '#0f0d18',
+              card: '#151322',
+              border: '#241f38',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #08070d;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #241f38;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a855f7;
+    }
+    .glow-bg {
+      background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.18), transparent 60%);
+    }
+    .modal-sheet-enter {
+      transform: translateY(100%);
+      opacity: 0;
+      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+    }
+    .modal-sheet-active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .fade-scale {
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+</head>
+<body class="bg-brand-dark text-slate-200 min-h-screen flex flex-col font-sans antialiased overflow-x-hidden selection:bg-brand-500 selection:text-white">
+
+  <div id="preloader" class="fixed inset-0 z-50 bg-brand-dark flex flex-col items-center justify-center transition-all duration-700 ease-out">
+    <div class="relative flex items-center justify-center">
+      <div class="w-16 h-16 rounded-full border-2 border-brand-500/20 border-t-brand-400 animate-spin"></div>
+      <div class="absolute w-8 h-8 rounded-full bg-brand-500/20 blur-md animate-pulse"></div>
+      <i data-lucide="sparkles" class="w-6 h-6 text-brand-400 absolute"></i>
+    </div>
+    <div class="mt-4 flex items-center gap-2">
+      <span class="text-sm font-semibold tracking-widest uppercase text-slate-400">Loading</span>
+      <span class="text-sm font-bold text-brand-400">sbyuxD API</span>
+    </div>
+  </div>
+
+  <div class="fixed inset-0 pointer-events-none glow-bg z-0"></div>
+
+  <header class="sticky top-0 z-30 backdrop-blur-xl bg-brand-dark/75 border-b border-brand-border/60 transition-all duration-300">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2.5 group">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-lg shadow-brand-500/25 group-hover:scale-105 transition-transform duration-300">
+          <i data-lucide="terminal" class="w-5 h-5"></i>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-bold text-base tracking-tight text-white flex items-center gap-1.5">
+            sbyuxD <span class="text-xs px-1.5 py-0.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20">API</span>
+          </span>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <a href="#docs" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-slate-300 hover:text-white px-3.5 py-2 rounded-lg hover:bg-brand-surface border border-transparent hover:border-brand-border transition-all duration-200">
+          <i data-lucide="book-open" class="w-4 h-4 text-brand-400"></i>
+          Endpoints
+        </a>
+        <a href="#docs" class="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white shadow-lg shadow-brand-500/25 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+          <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+          Test API
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10 flex-1">
+    <section class="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-20 text-center">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-card border border-brand-border text-xs font-medium text-brand-400 mb-6 shadow-inner">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span>High Performance REST API Framework</span>
+      </div>
+
+      <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight max-w-3xl mx-auto">
+        Ultra Modular, <br class="hidden sm:inline" />
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-purple-300 to-indigo-400">
+          Lightweight & Lightning Fast
+        </span>
+      </h1>
+
+      <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto mb-10 leading-relaxed">
+        Next-generation REST API service crafted by <strong class="text-slate-200 font-semibold">sbyuxD</strong>. Built with modular hot-reload architecture, zero-friction endpoint integration, and native ESM.
+      </p>
+
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <a href="#docs" class="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-medium text-sm shadow-xl shadow-brand-500/20 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]">
+          <i data-lucide="compass" class="w-4 h-4"></i>
+          Explore Documentation
+        </a>
+        <button onclick="checkServerLatency()" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-surface hover:bg-brand-card text-slate-300 hover:text-white border border-brand-border font-medium text-sm transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]">
+          <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
+          <span id="ping-text">Check Latency</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 max-w-2xl mx-auto mt-16 text-left">
+        <div class="p-4 rounded-2xl bg-brand-surface/60 border border-brand-border/60 backdrop-blur-md">
+          <div class="text-xs text-slate-400 mb-1">Total Endpoints</div>
+          <div id="stat-total" class="text-2xl font-bold text-white font-mono">-</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-brand-surface/60 border border-brand-border/60 backdrop-blur-md">
+          <div class="text-xs text-slate-400 mb-1">Categories</div>
+          <div id="stat-categories" class="text-2xl font-bold text-brand-400 font-mono">-</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-brand-surface/60 border border-brand-border/60 backdrop-blur-md col-span-2 sm:col-span-1">
+          <div class="text-xs text-slate-400 mb-1">Architecture</div>
+          <div class="text-2xl font-bold text-emerald-400 font-mono text-base pt-1">ESM / Dynamic</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="docs" class="max-w-6xl mx-auto px-4 sm:px-6 pb-28">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h2 class="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+            <i data-lucide="layers" class="w-6 h-6 text-brand-400"></i>
+            API Documentation
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">Select an endpoint below to open interactive testing</p>
+        </div>
+
+        <div class="relative w-full md:w-72">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="search-input" placeholder="Search endpoints..." class="w-full pl-10 pr-4 py-2.5 text-xs bg-brand-surface border border-brand-border rounded-xl text-white placeholder-slate-500 focus:border-brand-500 transition-all duration-200" />
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 no-scrollbar" id="category-tabs">
+        <button onclick="filterCategory('all')" class="cat-btn active px-4 py-2 rounded-xl text-xs font-semibold bg-brand-500 text-white transition-all duration-200">
+          All
+        </button>
+      </div>
+
+      <div id="endpoint-container" class="space-y-10">
+        <div class="text-center py-20 text-slate-500 text-sm flex flex-col items-center gap-2">
+          <i data-lucide="loader" class="w-6 h-6 animate-spin text-brand-400"></i>
+          Loading endpoints registry...
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal-backdrop" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300" onclick="closeModal()"></div>
+
+  <div id="modal-sheet" class="modal-sheet-enter fixed inset-x-0 bottom-0 z-50 max-w-3xl mx-auto max-h-[88vh] bg-brand-surface border-t sm:border-x sm:rounded-t-3xl border-brand-border flex flex-col shadow-2xl">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-brand-border">
+      <div class="flex items-center gap-3">
+        <span id="modal-badge-method" class="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-brand-500/20 text-brand-300 border border-brand-500/30">GET</span>
+        <h3 id="modal-title" class="font-bold text-base text-white tracking-tight">Endpoint Title</h3>
+      </div>
+      <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-brand-card hover:bg-brand-border flex items-center justify-center text-slate-400 hover:text-white transition-all duration-200">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6 space-y-6">
+      <div>
+        <div class="text-xs text-slate-400 mb-1">Description</div>
+        <p id="modal-desc" class="text-sm text-slate-200 leading-relaxed">-</p>
+      </div>
+
+      <div>
+        <div class="text-xs text-slate-400 mb-1.5">Route Path</div>
+        <div class="flex items-center justify-between p-3 rounded-xl bg-brand-dark border border-brand-border font-mono text-xs text-brand-400">
+          <span id="modal-path">/example/route</span>
+          <button onclick="copyRoute()" class="text-slate-400 hover:text-white transition-colors" title="Copy route">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="modal-params-wrapper">
+        <div class="text-xs text-slate-400 mb-2">Request Parameters</div>
+        <form id="modal-form" onsubmit="executeApi(event)" class="space-y-3">
+          <div id="modal-inputs" class="space-y-3"></div>
+          
+          <button type="submit" id="btn-submit" class="w-full py-3 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-medium text-xs flex items-center justify-center gap-2 shadow-lg shadow-brand-500/25 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] mt-4">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+            <span>Execute Request</span>
+          </button>
+        </form>
+      </div>
+
+      <div id="modal-response-wrapper" class="space-y-2 hidden">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400">Response JSON</span>
+            <span id="modal-status-pill" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">200 OK</span>
+            <span id="modal-time-pill" class="text-[10px] font-mono text-slate-400">0ms</span>
+          </div>
+          <button onclick="copyResponse()" class="text-xs text-brand-400 hover:text-brand-300 flex items-center gap-1 transition-colors">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span>Copy</span>
+          </button>
+        </div>
+
+        <div class="relative rounded-2xl bg-brand-dark border border-brand-border p-4 overflow-x-auto max-h-72">
+          <pre id="modal-response-body" class="font-mono text-xs text-emerald-400 leading-relaxed"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="mt-auto border-t border-brand-border/60 bg-brand-dark py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <span>© 2026</span>
+        <span class="text-slate-300 font-semibold">sbyuxD</span>
+        <span>• All rights reserved</span>
+      </div>
+      <div>
+        <span>Modular REST API Framework</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let registry = {};
+    let activeEndpoint = null;
+    let currentCategory = 'all';
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
+      await fetchEndpoints();
+      
+      setTimeout(() => {
+        const preloader = document.getElementById('preloader');
+        preloader.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => preloader.remove(), 700);
+      }, 400);
+
+      document.getElementById('search-input').addEventListener('input', (e) => {
+        renderEndpoints(e.target.value.trim().toLowerCase());
+      });
+    });
+
+    async function fetchEndpoints() {
+      try {
+        const res = await fetch('/api/endpoints');
+        const data = await res.json();
+        
+        if (data.status && data.result) {
+          registry = data.result.endpoints || {};
+          document.getElementById('stat-total').textContent = data.result.total || 0;
+          document.getElementById('stat-categories').textContent = Object.keys(registry).length;
+
+          buildCategoryTabs();
+          renderEndpoints();
+        }
+      } catch (err) {
+        document.getElementById('endpoint-container').innerHTML = `
+          <div class="text-center py-12 text-rose-400 text-xs">
+            Failed to load endpoint definitions from server.
+          </div>
+        `;
+      }
+    }
+
+    function buildCategoryTabs() {
+      const container = document.getElementById('category-tabs');
+      container.innerHTML = `
+        <button onclick="filterCategory('all')" class="cat-btn px-4 py-2 rounded-xl text-xs font-semibold ${currentCategory === 'all' ? 'bg-brand-500 text-white' : 'bg-brand-surface text-slate-400 hover:text-white border border-brand-border'} transition-all duration-200">
+          All
+        </button>
+      `;
+
+      Object.keys(registry).forEach(cat => {
+        const btn = document.createElement('button');
+        btn.onclick = () => filterCategory(cat);
+        btn.className = `cat-btn px-4 py-2 rounded-xl text-xs font-semibold capitalize transition-all duration-200 ${currentCategory === cat ? 'bg-brand-500 text-white' : 'bg-brand-surface text-slate-400 hover:text-white border border-brand-border'}`;
+        btn.textContent = cat;
+        container.appendChild(btn);
+      });
+    }
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      buildCategoryTabs();
+      renderEndpoints(document.getElementById('search-input').value.trim().toLowerCase());
+    }
+
+    function renderEndpoints(searchQuery = '') {
+      const container = document.getElementById('endpoint-container');
+      container.innerHTML = '';
+
+      const categories = Object.keys(registry);
+      let matchedCount = 0;
+
+      categories.forEach(cat => {
+        if (currentCategory !== 'all' && currentCategory !== cat) return;
+
+        const endpoints = registry[cat].filter(ep => {
+          if (!searchQuery) return true;
+          return ep.name.toLowerCase().includes(searchQuery) ||
+                 ep.endpoint.toLowerCase().includes(searchQuery) ||
+                 ep.description.toLowerCase().includes(searchQuery);
+        });
+
+        if (endpoints.length === 0) return;
+        matchedCount += endpoints.length;
+
+        const catBlock = document.createElement('div');
+        catBlock.className = 'space-y-4 fade-scale';
+
+        catBlock.innerHTML = `
+          <div class="flex items-center gap-2 border-b border-brand-border/80 pb-2.5">
+            <span class="w-2 h-2 rounded-full bg-brand-400"></span>
+            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 font-mono">${cat}</h3>
+            <span class="text-xs text-slate-500 font-mono">(${endpoints.length})</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5" id="cat-grid-${cat}"></div>
+        `;
+
+        container.appendChild(catBlock);
+
+        const grid = document.getElementById(`cat-grid-${cat}`);
+
+        endpoints.forEach(ep => {
+          const card = document.createElement('div');
+          card.className = 'p-4 rounded-2xl bg-brand-surface hover:bg-brand-card border border-brand-border/70 hover:border-brand-500/40 cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-brand-500/10 group flex flex-col justify-between';
+          card.onclick = () => openModal(ep);
+
+          const method = (ep.method && ep.method[0]) || 'GET';
+          const methodClass = method === 'POST' ? 'bg-blue-500/15 text-blue-400 border-blue-500/30' : 'bg-brand-500/15 text-brand-300 border-brand-500/30';
+
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="text-sm font-semibold text-white group-hover:text-brand-300 transition-colors">${ep.name}</span>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border ${methodClass}">${method}</span>
+              </div>
+              <p class="text-xs text-slate-400 line-clamp-2 mb-4 leading-relaxed">${ep.description || 'No description provided.'}</p>
+            </div>
+            <div class="flex items-center justify-between pt-3 border-t border-brand-border/50 text-[11px] font-mono text-slate-500">
+              <span class="truncate max-w-[200px] text-brand-400/90">${ep.endpoint}</span>
+              <div class="flex items-center gap-1 text-slate-400 group-hover:text-brand-400 transition-colors">
+                <span>Test</span>
+                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+              </div>
+            </div>
+          `;
+
+          grid.appendChild(card);
+        });
+      });
+
+      if (matchedCount === 0) {
+        container.innerHTML = `
+          <div class="text-center py-16 text-slate-500 text-xs">
+            No endpoints found matching your criteria.
+          </div>
+        `;
+      }
+
+      lucide.createIcons();
+    }
+
+    function openModal(ep) {
+      activeEndpoint = ep;
+      const modal = document.getElementById('modal-sheet');
+      const backdrop = document.getElementById('modal-backdrop');
+
+      document.getElementById('modal-title').textContent = ep.name;
+      document.getElementById('modal-desc').textContent = ep.description || '-';
+      document.getElementById('modal-path').textContent = ep.endpoint;
+
+      const method = (ep.method && ep.method[0]) || 'GET';
+      document.getElementById('modal-badge-method').textContent = method;
+
+      const inputsContainer = document.getElementById('modal-inputs');
+      inputsContainer.innerHTML = '';
+
+      const params = ep.params || {};
+      const paramKeys = Object.keys(params);
+
+      if (paramKeys.length === 0) {
+        inputsContainer.innerHTML = `
+          <div class="text-xs text-slate-500 italic p-3 rounded-xl bg-brand-dark/50 border border-brand-border/40">
+            This endpoint takes no query or body parameters.
+          </div>
+        `;
+      } else {
+        paramKeys.forEach(key => {
+          const item = params[key];
+          const isRequired = typeof item === 'object' ? item.required : false;
+          const desc = typeof item === 'object' ? item.description : '';
+
+          const group = document.createElement('div');
+          group.className = 'space-y-1';
+          group.innerHTML = `
+            <div class="flex items-center justify-between text-xs font-mono">
+              <label class="text-slate-300 font-semibold">${key} ${isRequired ? '<span class="text-rose-400">*</span>' : ''}</label>
+              <span class="text-[10px] text-slate-500">${desc}</span>
+            </div>
+            <input type="text" name="${key}" ${isRequired ? 'required' : ''} placeholder="Enter ${key}..." class="w-full px-3.5 py-2.5 text-xs bg-brand-dark border border-brand-border rounded-xl text-white placeholder-slate-600 focus:border-brand-500 transition-all font-mono" />
+          `;
+          inputsContainer.appendChild(group);
+        });
+      }
+
+      document.getElementById('modal-response-wrapper').classList.add('hidden');
+      document.body.style.overflow = 'hidden';
+
+      backdrop.classList.remove('opacity-0', 'pointer-events-none');
+      backdrop.classList.add('opacity-100');
+
+      modal.classList.add('modal-sheet-active');
+      lucide.createIcons();
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('modal-sheet');
+      const backdrop = document.getElementById('modal-backdrop');
+
+      modal.classList.remove('modal-sheet-active');
+      backdrop.classList.remove('opacity-100');
+      backdrop.classList.add('opacity-0', 'pointer-events-none');
+
+      document.body.style.overflow = '';
+      activeEndpoint = null;
+    }
+
+    async function executeApi(e) {
+      e.preventDefault();
+      if (!activeEndpoint) return;
+
+      const submitBtn = document.getElementById('btn-submit');
+      const responseWrapper = document.getElementById('modal-response-wrapper');
+      const responseBody = document.getElementById('modal-response-body');
+      const statusPill = document.getElementById('modal-status-pill');
+      const timePill = document.getElementById('modal-time-pill');
+
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-60');
+
+      const formData = new FormData(e.target);
+      const queryParams = new URLSearchParams();
+      const bodyPayload = {};
+
+      for (const [key, val] of formData.entries()) {
+        if (val.trim()) {
+          queryParams.append(key, val.trim());
+          bodyPayload[key] = val.trim();
+        }
+      }
+
+      const method = (activeEndpoint.method && activeEndpoint.method[0]) || 'GET';
+      let url = activeEndpoint.endpoint;
+
+      const options = { method };
+
+      if (method === 'GET') {
+        const qs = queryParams.toString();
+        if (qs) url += `?${qs}`;
+      } else {
+        options.headers = { 'Content-Type': 'application/json' };
+        options.body = JSON.stringify(bodyPayload);
+      }
+
+      const startTime = performance.now();
+
+      try {
+        const response = await fetch(url, options);
+        const duration = Math.round(performance.now() - startTime);
+        const json = await response.json();
+
+        statusPill.textContent = `${response.status} ${response.statusText || 'OK'}`;
+        statusPill.className = response.ok 
+          ? 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+          : 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30';
+
+        timePill.textContent = `${duration}ms`;
+        responseBody.textContent = JSON.stringify(json, null, 2);
+        responseWrapper.classList.remove('hidden');
+      } catch (err) {
+        const duration = Math.round(performance.now() - startTime);
+        statusPill.textContent = `Error`;
+        statusPill.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30';
+        timePill.textContent = `${duration}ms`;
+        responseBody.textContent = JSON.stringify({ status: false, message: err.message }, null, 2);
+        responseWrapper.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-60');
+      }
+    }
+
+    function copyRoute() {
+      if (!activeEndpoint) return;
+      navigator.clipboard.writeText(window.location.origin + activeEndpoint.endpoint);
+    }
+
+    function copyResponse() {
+      const text = document.getElementById('modal-response-body').textContent;
+      if (text) navigator.clipboard.writeText(text);
+    }
+
+    async function checkServerLatency() {
+      const pingText = document.getElementById('ping-text');
+      pingText.textContent = 'Pinging...';
+      const start = performance.now();
+      try {
+        await fetch('/tools/ping');
+        const duration = Math.round(performance.now() - start);
+        pingText.textContent = `${duration}ms Latency`;
+      } catch {
+        pingText.textContent = 'Server Offline';
+      }
+    }
+  </script>
+</body>
+</html>
