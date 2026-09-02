@@ -1,5 +1,10 @@
 {
   "version": 2,
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "src/plugins/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
