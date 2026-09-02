@@ -5,6 +5,7 @@ import cors from "cors";
 import {
   plugins,
   loadAllPlugins,
+  resolveSingleRouteOnDemand,
   sendSuccess,
   sendError,
   validateParams,
@@ -30,7 +31,9 @@ app.use(async (req, res, next) => {
   next();
 });
 
-app.get("/api/endpoints", (req, res) => {
+app.get("/api/endpoints", async (req, res) => {
+  await loadAllPlugins();
+
   const endpoints = {};
 
   for (const [routePath, data] of plugins.entries()) {
@@ -58,7 +61,11 @@ app.get("/api/endpoints", (req, res) => {
 
 app.all("/:category/:plugin(*)", async (req, res) => {
   const routePath = `/${req.params.category}/${req.params.plugin}`.toLowerCase();
-  const target = plugins.get(routePath);
+  let target = plugins.get(routePath);
+
+  if (!target) {
+    target = await resolveSingleRouteOnDemand(req.params.category, req.params.plugin);
+  }
 
   if (!target) {
     return sendError(res, `Endpoint '${routePath}' not found`, 404);
