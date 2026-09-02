@@ -84,9 +84,14 @@ export const validateParams = (schema, req) => {
 export const plugins = new Map();
 
 const parsePluginPath = (filePath) => {
-  const rel = path.relative(PLUGINS_DIR, filePath).replace(/\\/g, "/");
+  const fullPath = path.resolve(filePath);
+  const rel = path.relative(PLUGINS_DIR, fullPath).replace(/\\/g, "/");
   const parts = rel.split("/");
-  if (parts.length < 2) return null;
+
+  if (parts.length === 1) {
+    const name = parts[0].replace(/\.js$/, "").toLowerCase();
+    return { category: "general", name, routePath: `/general/${name}` };
+  }
 
   const category = parts[0].toLowerCase();
   const name = parts.slice(1).join("/").replace(/\.js$/, "").toLowerCase();
@@ -101,11 +106,15 @@ export const loadPlugin = async (filePath) => {
   if (!parsed) return;
 
   try {
-    const fileUrl = `${pathToFileURL(filePath).href}?v=${Date.now()}`;
+    const fullPath = path.resolve(filePath);
+    const fileUrl = `${pathToFileURL(fullPath).href}?v=${Date.now()}`;
     const module = await import(fileUrl);
     const handler = module.default;
 
-    if (!handler || typeof handler.execute !== "function") return;
+    if (!handler || typeof handler.execute !== "function") {
+      console.warn(`[WARN] ${filePath} tidak memiliki execute()`);
+      return;
+    }
 
     plugins.set(parsed.routePath, {
       name: handler.name || parsed.name,
@@ -117,8 +126,10 @@ export const loadPlugin = async (filePath) => {
       cache: typeof handler.cache === "number" ? handler.cache : null,
       execute: handler.execute
     });
+
+    console.log(`[LOADED] ${parsed.routePath}`);
   } catch (err) {
-    console.error(`Failed to load: ${filePath}`, err);
+    console.error(`[ERROR] Gagal memuat plugin ${filePath}:`, err.message);
   }
 };
 
@@ -126,13 +137,15 @@ export const unloadPlugin = (filePath) => {
   const parsed = parsePluginPath(filePath);
   if (parsed && plugins.has(parsed.routePath)) {
     plugins.delete(parsed.routePath);
+    console.log(`[UNLOADED] ${parsed.routePath}`);
   }
 };
 
 const getFiles = (dir) => {
   let results = [];
-  const list = fs.readdirSync(dir, { withFileTypes: true });
+  if (!fs.existsSync(dir)) return results;
 
+  const list = fs.readdirSync(dir, { withFileTypes: true });
   for (const item of list) {
     const fullPath = path.join(dir, item.name);
     if (item.isDirectory()) {
@@ -152,13 +165,19 @@ export const loadAllPlugins = async () => {
   }
 
   const files = getFiles(PLUGINS_DIR);
-  await Promise.all(files.map(loadPlugin));
+  for (const file of files) {
+    await loadPlugin(file);
+  }
 };
 
 export const watchPlugins = () => {
   const watcher = chokidar.watch(PLUGINS_DIR, {
     ignoreInitial: true,
-    persistent: true
+    persistent: true,
+    awaitWriteFinish: {
+      stabilityThreshold: 300,
+      pollInterval: 100
+    }
   });
 
   watcher
