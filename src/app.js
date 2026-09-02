@@ -1,13 +1,17 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
 import { plugins, loadAllPlugins } from "./utils/loader.js";
 import { sendSuccess, sendError } from "./utils/response.js";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.resolve(__dirname, "../public")));
 
 let initialized = false;
 app.use(async (req, res, next) => {
@@ -18,7 +22,7 @@ app.use(async (req, res, next) => {
   next();
 });
 
-app.get("/", (req, res) => {
+app.get("/api/endpoints", (req, res) => {
   const endpoints = {};
 
   for (const [routePath, data] of plugins.entries()) {
