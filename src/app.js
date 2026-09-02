@@ -2,8 +2,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
-import { plugins, loadAllPlugins } from "./utils/loader.js";
-import { sendSuccess, sendError } from "./utils/response.js";
+import {
+  plugins,
+  loadAllPlugins,
+  sendSuccess,
+  sendError,
+  validateParams,
+  getCache,
+  setCache
+} from "./function.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -61,9 +68,25 @@ app.all("/:category/:plugin(*)", async (req, res) => {
     return sendError(res, `Method ${req.method} not allowed`, 405);
   }
 
+  const paramError = validateParams(target.params, req);
+  if (paramError) {
+    return sendError(res, paramError, 400);
+  }
+
+  const cacheKey = `${req.method}:${req.originalUrl}`;
+  if (target.cache && req.method === "GET") {
+    const cachedResult = getCache(cacheKey);
+    if (cachedResult !== null) {
+      return sendSuccess(res, cachedResult);
+    }
+  }
+
   try {
     const result = await target.execute(req, res);
     if (!res.headersSent && result !== undefined) {
+      if (target.cache && req.method === "GET") {
+        setCache(cacheKey, result, target.cache);
+      }
       return sendSuccess(res, result);
     }
   } catch (err) {
