@@ -1,5 +1,5 @@
 import app from "./src/app.js";
-import { watchPlugins, loadAllPlugins } from "./src/utils/loader.js";
+import { watchPlugins, loadAllPlugins } from "./src/function.js";
 
 const PORT = process.env.PORT || 3000;
 
