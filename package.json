@@ -1,0 +1,17 @@
+{
+  "name": "base rest-api simple by sbyuxD",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^1.13.4",
+    "chokidar": "^4.0.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "yt-search": "^2.13.1"
+  }
+}
