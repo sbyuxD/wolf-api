@@ -34,10 +34,11 @@ export const loadPlugin = async (filePath) => {
 
     plugins.set(parsed.routePath, {
       name: handler.name || parsed.name,
-      category: parsed.category,
+      category: handler.category || parsed.category,
       path: parsed.routePath,
       method: (handler.method || ["GET"]).map((m) => m.toUpperCase()),
       description: handler.description || "",
+      params: handler.params || {},
       execute: handler.execute
     });
   } catch (err) {
