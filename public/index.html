@@ -23,11 +23,11 @@
               accent: '#7c3aed',
               accentHover: '#6d28d9',
               accentLight: '#a78bfa',
-              dark: '#090a0f',
-              surface: '#11131a',
-              card: '#161822',
-              border: '#232636',
-              borderLight: '#32374d',
+              dark: '#08080c',
+              surface: '#0f1017',
+              card: '#141622',
+              border: '#23263a',
+              borderLight: '#323753',
             }
           }
         }
@@ -44,17 +44,17 @@
       height: 5px;
     }
     ::-webkit-scrollbar-track {
-      background: #090a0f;
+      background: #08080c;
     }
     ::-webkit-scrollbar-thumb {
-      background: #232636;
+      background: #23263a;
       border-radius: 999px;
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #7c3aed;
     }
     .dot-pattern {
-      background-image: radial-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+      background-image: radial-gradient(rgba(167, 139, 250, 0.08) 1px, transparent 1px);
       background-size: 24px 24px;
     }
     .nav-link {
@@ -68,21 +68,21 @@
       bottom: -4px;
       left: 0;
       background-color: #7c3aed;
-      transition: width 250ms ease-in-out;
+      transition: width 250ms cubic-bezier(0.16, 1, 0.3, 1);
     }
     .nav-link:hover::after {
       width: 100%;
     }
     .card-hover {
-      transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 250ms cubic-bezier(0.16, 1, 0.3, 1), border-color 250ms ease;
+      transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1), border-color 300ms ease;
     }
     .card-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(124, 58, 237, 0.25);
+      transform: translateY(-4px) scale(1.005);
+      box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(124, 58, 237, 0.35);
     }
     .modal-sheet {
       transform: translateY(100%);
-      transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1), opacity 250ms ease;
+      transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms ease;
     }
     .modal-sheet.active {
       transform: translateY(0);
@@ -101,18 +101,81 @@
       border-radius: 9999px;
       pointer-events: none;
       z-index: 9999;
-      transform: scale(0.3);
-      opacity: 0.85;
-      background: radial-gradient(circle, rgba(167, 139, 250, 0.5) 0%, rgba(124, 58, 237, 0.2) 45%, transparent 70%);
+      transform: scale(0.2);
+      opacity: 0.9;
+      background: radial-gradient(circle, rgba(167, 139, 250, 0.55) 0%, rgba(124, 58, 237, 0.25) 45%, transparent 75%);
       transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 450ms ease;
+    }
+    .reveal-on-scroll {
+      opacity: 0;
+      transform: perspective(1000px) translate3d(0, 40px, -50px) scale(0.95);
+      transition: opacity 650ms cubic-bezier(0.16, 1, 0.3, 1), transform 650ms cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    .reveal-on-scroll.is-visible {
+      opacity: 1;
+      transform: perspective(1000px) translate3d(0, 0, 0) scale(1);
+    }
+    @keyframes focusInit {
+      0% {
+        filter: blur(14px);
+        opacity: 0.05;
+        letter-spacing: 0.45em;
+        transform: scale(0.92);
+      }
+      50% {
+        filter: blur(4px);
+        opacity: 0.7;
+        letter-spacing: 0.25em;
+      }
+      100% {
+        filter: blur(0px);
+        opacity: 1;
+        letter-spacing: 0.15em;
+        transform: scale(1);
+      }
+    }
+    .animate-focus-init {
+      animation: focusInit 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .response-reveal {
+      animation: responsePop 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes responsePop {
+      0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .swal2-popup.custom-swal-center {
+      background: rgba(18, 20, 31, 0.95) !important;
+      backdrop-filter: blur(16px) !important;
+      border: 1px solid #23263a !important;
+      border-radius: 1.25rem !important;
+      padding: 1.5rem !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(124, 58, 237, 0.2) !important;
+    }
+    .swal2-title {
+      font-size: 0.95rem !important;
+      font-weight: 600 !important;
+      color: #f8fafc !important;
     }
   </style>
 </head>
 <body class="bg-brand-dark text-slate-200 min-h-screen flex flex-col font-sans antialiased selection:bg-brand-accent selection:text-white">
 
-  <div id="preloader" class="fixed inset-0 z-50 bg-brand-dark flex flex-col items-center justify-center transition-opacity duration-300">
-    <div class="relative flex items-center justify-center">
-      <div class="w-12 h-12 rounded-full border-2 border-brand-border border-t-brand-accent animate-spin"></div>
+  <div id="preloader" class="fixed inset-0 z-50 bg-brand-dark flex flex-col items-center justify-center transition-all duration-500 ease-out">
+    <div class="flex flex-col items-center gap-4">
+      <div class="text-sm font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-accent via-purple-300 to-indigo-300 uppercase animate-focus-init">
+        sbyuxD Engine Initializing
+      </div>
+      <div class="w-48 h-1 bg-brand-border rounded-full overflow-hidden relative">
+        <div class="absolute inset-y-0 left-0 bg-brand-accent rounded-full transition-all duration-1000 ease-out w-full shadow-lg shadow-brand-accent"></div>
+      </div>
     </div>
   </div>
 
@@ -137,30 +200,32 @@
         </a>
       </div>
 
-      <button id="menu-btn" onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-brand-surface">
-        <i data-lucide="menu" class="w-5 h-5"></i>
+      <button id="menu-btn" onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-brand-surface transition-all duration-200">
+        <i data-lucide="menu" id="menu-icon" class="w-5 h-5 transition-transform duration-300"></i>
       </button>
     </div>
 
-    <div id="mobile-menu" class="hidden md:hidden border-b border-brand-border bg-brand-dark/95 backdrop-blur-md px-6 py-4 space-y-3">
-      <a href="#features" onclick="toggleMobileMenu()" class="block text-sm text-slate-300 hover:text-white">Features</a>
+    <div id="mobile-menu" class="md:hidden max-h-0 opacity-0 overflow-hidden transition-all duration-300 ease-in-out border-b border-brand-border bg-brand-dark/95 backdrop-blur-md px-6 py-0 space-y-3">
+      <a href="#features" onclick="toggleMobileMenu()" class="block text-sm text-slate-300 hover:text-white pt-3">Features</a>
       <a href="#docs" onclick="toggleMobileMenu()" class="block text-sm text-slate-300 hover:text-white">Endpoints</a>
       <a href="#status" onclick="toggleMobileMenu()" class="block text-sm text-slate-300 hover:text-white">Status</a>
-      <a href="#docs" onclick="toggleMobileMenu()" class="block w-full text-center py-2.5 rounded-lg bg-brand-accent text-white text-xs font-semibold">Get Started</a>
+      <a href="#docs" onclick="toggleMobileMenu()" class="block w-full text-center py-2.5 rounded-lg bg-brand-accent text-white text-xs font-semibold pb-3">Get Started</a>
     </div>
   </nav>
 
   <main class="flex-1">
     <section class="relative min-h-[92vh] flex items-center justify-center px-6 pt-24 pb-20 dot-pattern">
-      <div class="max-w-4xl mx-auto text-center">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-surface border border-brand-border text-xs font-medium text-slate-300 mb-8">
-          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <div class="max-w-4xl mx-auto text-center reveal-on-scroll">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-surface border border-brand-border text-xs font-medium text-slate-300 mb-8 shadow-inner">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span>Version 1.0 Production Ready</span>
         </div>
 
         <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
           Modern REST API with <br class="hidden sm:inline" />
-          <span class="text-brand-accentLight">Zero Configuration</span>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-accentLight via-purple-300 to-indigo-300">
+            Zero Configuration
+          </span>
         </h1>
 
         <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto mb-10 leading-relaxed font-normal">
@@ -168,7 +233,7 @@
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-xs sm:max-w-none mx-auto">
-          <a href="#docs" class="btn-action w-full sm:w-auto px-6 py-3 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-semibold flex items-center justify-center gap-2">
+          <a href="#docs" class="btn-action w-full sm:w-auto px-6 py-3 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-brand-accent/25">
             <i data-lucide="book-open" class="w-4 h-4"></i>
             <span>Browse Documentation</span>
           </a>
@@ -182,13 +247,13 @@
 
     <section id="features" class="py-24 border-t border-brand-border px-6">
       <div class="max-w-6xl mx-auto">
-        <div class="mb-16">
+        <div class="mb-16 reveal-on-scroll">
           <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Core Architecture</h2>
           <div class="w-8 h-1 bg-brand-accent rounded-full mt-2"></div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div class="p-8 rounded-2xl bg-brand-card border border-brand-border card-hover">
+          <div class="p-8 rounded-2xl bg-brand-card border border-brand-border card-hover reveal-on-scroll">
             <div class="w-10 h-10 rounded-xl bg-brand-surface border border-brand-border flex items-center justify-center text-brand-accentLight mb-6">
               <i data-lucide="cpu" class="w-5 h-5"></i>
             </div>
@@ -198,7 +263,7 @@
             </p>
           </div>
 
-          <div class="p-8 rounded-2xl bg-brand-card border border-brand-border card-hover">
+          <div class="p-8 rounded-2xl bg-brand-card border border-brand-border card-hover reveal-on-scroll">
             <div class="w-10 h-10 rounded-xl bg-brand-surface border border-brand-border flex items-center justify-center text-brand-accentLight mb-6">
               <i data-lucide="zap" class="w-5 h-5"></i>
             </div>
@@ -208,7 +273,7 @@
             </p>
           </div>
 
-          <div class="p-8 rounded-2xl bg-brand-card border border-brand-border card-hover">
+          <div class="p-8 rounded-2xl bg-brand-card border border-brand-border card-hover reveal-on-scroll">
             <div class="w-10 h-10 rounded-xl bg-brand-surface border border-brand-border flex items-center justify-center text-brand-accentLight mb-6">
               <i data-lucide="cloud" class="w-5 h-5"></i>
             </div>
@@ -223,7 +288,7 @@
 
     <section id="docs" class="py-24 border-t border-brand-border px-6">
       <div class="max-w-6xl mx-auto">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 reveal-on-scroll">
           <div>
             <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">API Endpoints</h2>
             <div class="w-8 h-1 bg-brand-accent rounded-full mt-2"></div>
@@ -237,7 +302,7 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8" id="category-tabs"></div>
+        <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 reveal-on-scroll" id="category-tabs"></div>
 
         <div id="endpoint-container" class="space-y-12">
           <div class="text-center py-16 text-slate-500 text-xs">
@@ -249,23 +314,23 @@
 
     <section id="status" class="py-24 border-t border-brand-border px-6 bg-brand-surface/30">
       <div class="max-w-6xl mx-auto">
-        <div class="mb-12">
+        <div class="mb-12 reveal-on-scroll">
           <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">System Status</h2>
           <div class="w-8 h-1 bg-brand-accent rounded-full mt-2"></div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div class="p-6 rounded-2xl bg-brand-card border border-brand-border">
+          <div class="p-6 rounded-2xl bg-brand-card border border-brand-border card-hover reveal-on-scroll">
             <div class="text-xs text-slate-400 mb-2">Registered Routes</div>
             <div id="stat-total" class="text-3xl font-bold text-white font-mono">-</div>
           </div>
 
-          <div class="p-6 rounded-2xl bg-brand-card border border-brand-border">
+          <div class="p-6 rounded-2xl bg-brand-card border border-brand-border card-hover reveal-on-scroll">
             <div class="text-xs text-slate-400 mb-2">Active Categories</div>
             <div id="stat-categories" class="text-3xl font-bold text-brand-accentLight font-mono">-</div>
           </div>
 
-          <div class="p-6 rounded-2xl bg-brand-card border border-brand-border flex items-center justify-between">
+          <div class="p-6 rounded-2xl bg-brand-card border border-brand-border card-hover reveal-on-scroll flex items-center justify-between">
             <div>
               <div class="text-xs text-slate-400 mb-2">Response Latency</div>
               <div id="stat-latency" class="text-3xl font-bold text-emerald-400 font-mono">-</div>
@@ -279,7 +344,7 @@
     </section>
   </main>
 
-  <div id="modal-backdrop" class="fixed inset-0 bg-black/75 backdrop-blur-xs z-50 opacity-0 pointer-events-none transition-opacity duration-250" onclick="closeModal()"></div>
+  <div id="modal-backdrop" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-300" onclick="closeModal()"></div>
 
   <div id="modal-sheet" class="modal-sheet fixed inset-x-0 bottom-0 z-50 max-w-2xl mx-auto max-h-[88vh] bg-brand-surface border-t sm:border-x sm:rounded-t-2xl border-brand-border flex flex-col shadow-2xl">
     <div class="flex items-center justify-between px-6 py-4 border-b border-brand-border">
@@ -313,17 +378,17 @@
         <form id="modal-form" onsubmit="executeRequest(event)" class="space-y-4">
           <div id="modal-inputs" class="space-y-3"></div>
 
-          <button type="submit" id="btn-submit" class="btn-action w-full py-2.5 px-4 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-semibold flex items-center justify-center gap-2">
+          <button type="submit" id="btn-submit" class="btn-action w-full py-2.5 px-4 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-lg shadow-brand-accent/25">
             <i data-lucide="send" class="w-3.5 h-3.5"></i>
             <span>Execute Request</span>
           </button>
         </form>
       </div>
 
-      <div id="modal-response-wrapper" class="space-y-2 hidden">
+      <div id="modal-response-wrapper" class="space-y-2 hidden response-reveal">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <label class="text-xs font-semibold text-slate-400">Response</label>
+            <label class="text-xs font-semibold text-slate-400">Response Result</label>
             <span id="modal-status-pill" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">200 OK</span>
             <span id="modal-time-pill" class="text-[10px] font-mono text-slate-400 text-xs">0ms</span>
           </div>
@@ -333,7 +398,7 @@
           </button>
         </div>
 
-        <div class="rounded-xl bg-brand-dark border border-brand-border p-4 overflow-x-auto max-h-64">
+        <div class="rounded-xl bg-brand-dark border border-brand-border p-4 overflow-x-auto max-h-64 shadow-inner">
           <pre id="modal-response-body" class="font-mono text-xs text-slate-300 leading-relaxed"></pre>
         </div>
       </div>
@@ -352,23 +417,24 @@
     let activeEndpoint = null;
     let currentCategory = 'all';
 
-    const Toast = Swal.mixin({
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 2500,
-      timerProgressBar: true,
-      background: '#161822',
-      color: '#f8fafc',
-      customClass: {
-        popup: 'border border-[#232636] rounded-xl shadow-xl'
-      }
-    });
+    const notify = (icon, title) => {
+      Swal.fire({
+        icon,
+        title,
+        position: 'center',
+        showConfirmButton: false,
+        timer: 1800,
+        customClass: {
+          popup: 'custom-swal-center'
+        },
+        iconColor: icon === 'success' ? '#10b981' : (icon === 'info' ? '#a78bfa' : '#f43f5e')
+      });
+    };
 
     window.addEventListener('pointerdown', (e) => {
       const ripple = document.createElement('div');
       ripple.className = 'touch-ripple';
-      const size = 36;
+      const size = 38;
       ripple.style.width = `${size}px`;
       ripple.style.height = `${size}px`;
       ripple.style.left = `${e.clientX - size / 2}px`;
@@ -383,14 +449,34 @@
       setTimeout(() => ripple.remove(), 450);
     });
 
+    const initScrollObserver = () => {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+          } else {
+            entry.target.classList.remove('is-visible');
+          }
+        });
+      }, {
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px'
+      });
+
+      document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+    };
+
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
       await fetchEndpoints();
       checkLatency();
+      initScrollObserver();
 
-      const preloader = document.getElementById('preloader');
-      preloader.classList.add('opacity-0', 'pointer-events-none');
-      setTimeout(() => preloader.remove(), 300);
+      setTimeout(() => {
+        const preloader = document.getElementById('preloader');
+        preloader.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => preloader.remove(), 500);
+      }, 700);
 
       window.addEventListener('scroll', handleNavbarScroll);
       document.getElementById('search-input').addEventListener('input', (e) => {
@@ -411,7 +497,18 @@
 
     function toggleMobileMenu() {
       const menu = document.getElementById('mobile-menu');
-      menu.classList.toggle('hidden');
+      const icon = document.getElementById('menu-icon');
+      
+      const isOpen = menu.classList.contains('max-h-96');
+      if (isOpen) {
+        menu.classList.remove('max-h-96', 'opacity-100', 'py-4');
+        menu.classList.add('max-h-0', 'opacity-0', 'py-0');
+        icon.style.transform = 'rotate(0deg)';
+      } else {
+        menu.classList.remove('max-h-0', 'opacity-0', 'py-0');
+        menu.classList.add('max-h-96', 'opacity-100', 'py-4');
+        icon.style.transform = 'rotate(90deg)';
+      }
     }
 
     async function fetchEndpoints() {
@@ -439,7 +536,7 @@
     function buildCategoryTabs() {
       const container = document.getElementById('category-tabs');
       container.innerHTML = `
-        <button onclick="filterCategory('all')" class="btn-action px-3.5 py-1.5 rounded-lg text-xs font-semibold ${currentCategory === 'all' ? 'bg-brand-accent text-white' : 'bg-brand-card text-slate-400 hover:text-white border border-brand-border'}">
+        <button onclick="filterCategory('all')" class="btn-action px-3.5 py-1.5 rounded-lg text-xs font-semibold ${currentCategory === 'all' ? 'bg-brand-accent text-white shadow-md shadow-brand-accent/30' : 'bg-brand-card text-slate-400 hover:text-white border border-brand-border'}">
           All
         </button>
       `;
@@ -447,7 +544,7 @@
       Object.keys(registry).forEach(cat => {
         const btn = document.createElement('button');
         btn.onclick = () => filterCategory(cat);
-        btn.className = `btn-action px-3.5 py-1.5 rounded-lg text-xs font-semibold capitalize ${currentCategory === cat ? 'bg-brand-accent text-white' : 'bg-brand-card text-slate-400 hover:text-white border border-brand-border'}`;
+        btn.className = `btn-action px-3.5 py-1.5 rounded-lg text-xs font-semibold capitalize ${currentCategory === cat ? 'bg-brand-accent text-white shadow-md shadow-brand-accent/30' : 'bg-brand-card text-slate-400 hover:text-white border border-brand-border'}`;
         btn.textContent = cat;
         container.appendChild(btn);
       });
@@ -480,7 +577,7 @@
         count += endpoints.length;
 
         const block = document.createElement('div');
-        block.className = 'space-y-4';
+        block.className = 'space-y-4 reveal-on-scroll';
 
         block.innerHTML = `
           <div class="flex items-center gap-2 pb-2">
@@ -533,6 +630,7 @@
       }
 
       lucide.createIcons();
+      initScrollObserver();
     }
 
     function openModal(ep) {
@@ -651,20 +749,16 @@
 
         timePill.textContent = `${duration}ms`;
         responseBody.textContent = JSON.stringify(json, null, 2);
+        
         responseWrapper.classList.remove('hidden');
+        responseWrapper.classList.remove('response-reveal');
+        void responseWrapper.offsetWidth;
+        responseWrapper.classList.add('response-reveal');
 
         if (response.ok) {
-          Toast.fire({
-            icon: 'success',
-            title: `Executed ${activeEndpoint.name} successfully`,
-            iconColor: '#10b981'
-          });
+          notify('success', `Success (${response.status})`);
         } else {
-          Toast.fire({
-            icon: 'error',
-            title: json.message || 'Request failed with status error',
-            iconColor: '#f43f5e'
-          });
+          notify('error', json.message || 'Request Failed');
         }
       } catch (err) {
         const duration = Math.round(performance.now() - start);
@@ -672,13 +766,13 @@
         statusPill.className = 'text-[10px] font-mono px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30';
         timePill.textContent = `${duration}ms`;
         responseBody.textContent = JSON.stringify({ status: false, message: err.message }, null, 2);
+        
         responseWrapper.classList.remove('hidden');
+        responseWrapper.classList.remove('response-reveal');
+        void responseWrapper.offsetWidth;
+        responseWrapper.classList.add('response-reveal');
 
-        Toast.fire({
-          icon: 'error',
-          title: err.message || 'Execution error occurred',
-          iconColor: '#f43f5e'
-        });
+        notify('error', err.message || 'Error executing request');
       } finally {
         submitBtn.disabled = false;
         submitBtn.classList.remove('opacity-50');
@@ -688,22 +782,14 @@
     function copyRoute() {
       if (!activeEndpoint) return;
       navigator.clipboard.writeText(window.location.origin + activeEndpoint.endpoint);
-      Toast.fire({
-        icon: 'info',
-        title: 'Endpoint route copied',
-        iconColor: '#a78bfa'
-      });
+      notify('info', 'Route copied to clipboard');
     }
 
     function copyResponse() {
       const text = document.getElementById('modal-response-body').textContent;
       if (text) {
         navigator.clipboard.writeText(text);
-        Toast.fire({
-          icon: 'info',
-          title: 'JSON response copied',
-          iconColor: '#a78bfa'
-        });
+        notify('info', 'JSON copied to clipboard');
       }
     }
 
