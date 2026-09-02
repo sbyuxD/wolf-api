@@ -4,13 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>sbyuxD — REST API</title>
+  
+  <meta name="description" content="High performance modular REST API engine built with native Node.js ESM." />
+  <meta property="og:title" content="sbyuxD — REST API" />
+  <meta property="og:description" content="High performance modular REST API engine built with native Node.js ESM." />
+  <meta property="og:image" content="/media/ZEPH.jpg" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="/media/ZEPH.jpg" />
+  
+  <link rel="icon" type="image/jpeg" href="/media/ZEPH.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500,700,900&display=swap" rel="stylesheet" />
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
   <script>
     tailwind.config = {
       theme: {
@@ -22,16 +34,16 @@
           },
           colors: {
             brand: {
-              accent: '#c88a58',
-              accentHover: '#b57745',
-              accentLight: '#deb892',
-              dark: '#0e0d0c',
-              surface: '#151412',
-              card: '#1b1916',
-              border: '#2a2723',
-              borderLight: '#3d3832',
-              muted: '#8f877c',
-              text: '#f2ede4',
+              accent: '#ea580c',
+              accentHover: '#c2410c',
+              accentLight: '#fb923c',
+              dark: '#0d0c0b',
+              surface: '#141311',
+              card: '#1a1816',
+              border: '#292622',
+              borderLight: '#3d3934',
+              muted: '#8e867c',
+              text: '#f4ede4',
             }
           }
         }
@@ -48,17 +60,17 @@
       height: 5px;
     }
     ::-webkit-scrollbar-track {
-      background: #0e0d0c;
+      background: #0d0c0b;
     }
     ::-webkit-scrollbar-thumb {
-      background: #2a2723;
+      background: #292622;
       border-radius: 999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #c88a58;
+      background: #ea580c;
     }
     .warm-pattern {
-      background-image: radial-gradient(rgba(200, 138, 88, 0.06) 1px, transparent 1px);
+      background-image: radial-gradient(rgba(234, 88, 12, 0.06) 1px, transparent 1px);
       background-size: 28px 28px;
     }
     .nav-link {
@@ -71,7 +83,7 @@
       height: 2px;
       bottom: -4px;
       left: 0;
-      background-color: #c88a58;
+      background-color: #ea580c;
       transition: width 250ms cubic-bezier(0.16, 1, 0.3, 1);
     }
     .nav-link:hover::after {
@@ -82,7 +94,7 @@
     }
     .card-hover:hover {
       transform: translateY(-4px);
-      box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(200, 138, 88, 0.3);
+      box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(234, 88, 12, 0.3);
     }
     .modal-sheet {
       transform: translateY(100%);
@@ -107,7 +119,7 @@
       z-index: 9999;
       transform: scale(0.2);
       opacity: 0.9;
-      background: radial-gradient(circle, rgba(222, 184, 146, 0.5) 0%, rgba(200, 138, 88, 0.2) 50%, transparent 75%);
+      background: radial-gradient(circle, rgba(251, 146, 60, 0.5) 0%, rgba(234, 88, 12, 0.2) 50%, transparent 75%);
       transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 450ms ease;
     }
     .reveal-on-scroll {
@@ -136,9 +148,9 @@
       position: absolute;
       width: 64px;
       height: 64px;
-      border: 1.5px solid #c88a58;
-      background: rgba(200, 138, 88, 0.08);
-      box-shadow: inset 0 0 12px rgba(200, 138, 88, 0.15);
+      border: 1.5px solid #ea580c;
+      background: rgba(234, 88, 12, 0.08);
+      box-shadow: inset 0 0 12px rgba(234, 88, 12, 0.15);
     }
     .cube-front  { transform: rotateY(0deg) translateZ(32px); }
     .cube-back   { transform: rotateY(180deg) translateZ(32px); }
@@ -153,18 +165,18 @@
     }
     .console-vps {
       transform: perspective(1000px) rotateX(3deg);
-      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(200, 138, 88, 0.15);
+      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(234, 88, 12, 0.15);
       transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 400ms ease;
     }
     .console-vps:hover {
       transform: perspective(1000px) rotateX(0deg) translateY(-3px);
-      box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(200, 138, 88, 0.3);
+      box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(234, 88, 12, 0.3);
     }
     .terminal-cursor {
       display: inline-block;
       width: 8px;
       height: 15px;
-      background-color: #c88a58;
+      background-color: #ea580c;
       vertical-align: sub;
       animation: blinkCursor 700ms infinite steps(1);
     }
@@ -173,8 +185,8 @@
       50% { opacity: 0; }
     }
     .swal2-popup.custom-swal-center {
-      background: #1b1916 !important;
-      border: 1px solid #3d3832 !important;
+      background: #1a1816 !important;
+      border: 1px solid #3d3934 !important;
       border-radius: 1rem !important;
       padding: 1.5rem !important;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85) !important;
@@ -183,7 +195,7 @@
       font-size: 0.95rem !important;
       font-weight: 700 !important;
       font-family: "Satoshi", sans-serif !important;
-      color: #f2ede4 !important;
+      color: #f4ede4 !important;
     }
     .response-reveal {
       animation: responsePop 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -214,9 +226,9 @@
           <div class="cube-face cube-bottom"></div>
         </div>
       </div>
-      <div class="flex items-center gap-2 font-mono text-xs text-brand-muted tracking-wider uppercase">
+      <div class="flex items-center gap-2 font-mono text-xs text-brand-muted tracking-widest uppercase">
         <span class="w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse"></span>
-        <span>Booting VPS Core...</span>
+        <span>Initializing</span>
       </div>
     </div>
   </div>
@@ -238,7 +250,7 @@
       </div>
 
       <div class="hidden md:flex items-center gap-3">
-        <a href="#docs" class="btn-action px-4 py-2 rounded-md bg-brand-accent hover:bg-brand-accentHover text-brand-dark text-xs font-bold">
+        <a href="#docs" class="btn-action px-4 py-2 rounded-md bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-bold">
           Get Started
         </a>
       </div>
@@ -253,7 +265,7 @@
       <a href="#features" onclick="toggleMobileMenu()" class="block text-sm font-semibold text-brand-muted hover:text-brand-text">Features</a>
       <a href="#docs" onclick="toggleMobileMenu()" class="block text-sm font-semibold text-brand-muted hover:text-brand-text">Endpoints</a>
       <a href="#status" onclick="toggleMobileMenu()" class="block text-sm font-semibold text-brand-muted hover:text-brand-text">Status</a>
-      <a href="#docs" onclick="toggleMobileMenu()" class="block w-full text-center py-2.5 rounded-md bg-brand-accent text-brand-dark text-xs font-bold pb-3">Get Started</a>
+      <a href="#docs" onclick="toggleMobileMenu()" class="block w-full text-center py-2.5 rounded-md bg-brand-accent text-white text-xs font-bold pb-3">Get Started</a>
     </div>
   </nav>
 
@@ -274,7 +286,7 @@
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-xs sm:max-w-none mx-auto mb-16">
-          <a href="#docs" class="btn-action w-full sm:w-auto px-6 py-3 rounded-md bg-brand-accent hover:bg-brand-accentHover text-brand-dark text-xs font-bold flex items-center justify-center gap-2">
+          <a href="#docs" class="btn-action w-full sm:w-auto px-6 py-3 rounded-md bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-bold flex items-center justify-center gap-2">
             <i data-lucide="book-open" class="w-4 h-4"></i>
             <span>Browse Endpoints</span>
           </a>
@@ -291,9 +303,9 @@
         <div class="console-vps rounded-xl bg-brand-surface border border-brand-border overflow-hidden">
           <div class="px-4 py-2.5 bg-brand-dark border-b border-brand-border flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#3d3832] inline-block"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-[#3d3832] inline-block"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-[#3d3832] inline-block"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#ef4444] inline-block"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#f59e0b] inline-block"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-[#10b981] inline-block"></span>
               <span class="ml-2 text-xs font-mono font-medium text-brand-muted">root@sbyuxD:~# (bash)</span>
             </div>
 
@@ -448,7 +460,7 @@
         <form id="modal-form" onsubmit="executeRequest(event)" class="space-y-4">
           <div id="modal-inputs" class="space-y-3"></div>
 
-          <button type="submit" id="btn-submit" class="btn-action w-full py-2.5 px-4 rounded-md bg-brand-accent hover:bg-brand-accentHover text-brand-dark text-xs font-bold flex items-center justify-center gap-2">
+          <button type="submit" id="btn-submit" class="btn-action w-full py-2.5 px-4 rounded-md bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-bold flex items-center justify-center gap-2">
             <i data-lucide="send" class="w-3.5 h-3.5"></i>
             <span>Execute Request</span>
           </button>
@@ -476,9 +488,8 @@
   </div>
 
   <footer class="border-t border-brand-border py-8 px-6 bg-brand-dark">
-    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-brand-muted">
+    <div class="max-w-6xl mx-auto flex items-center justify-center text-xs font-mono text-brand-muted">
       <div>© 2026 sbyuxD. All rights reserved.</div>
-      <div>Node.js v20.x • ESM Dynamic Engine</div>
     </div>
   </footer>
 
@@ -498,7 +509,7 @@
         customClass: {
           popup: 'custom-swal-center'
         },
-        iconColor: icon === 'success' ? '#5a9e6f' : (icon === 'info' ? '#c88a58' : '#c85a54')
+        iconColor: icon === 'success' ? '#5a9e6f' : (icon === 'info' ? '#ea580c' : '#c85a54')
       });
     };
 
@@ -687,7 +698,7 @@
     function buildCategoryTabs() {
       const container = document.getElementById('category-tabs');
       container.innerHTML = `
-        <button onclick="filterCategory('all')" class="btn-action px-3.5 py-1.5 rounded text-xs font-bold ${currentCategory === 'all' ? 'bg-brand-accent text-brand-dark' : 'bg-brand-card text-brand-muted hover:text-brand-text border border-brand-border'}">
+        <button onclick="filterCategory('all')" class="btn-action px-3.5 py-1.5 rounded text-xs font-bold ${currentCategory === 'all' ? 'bg-brand-accent text-white' : 'bg-brand-card text-brand-muted hover:text-brand-text border border-brand-border'}">
           All
         </button>
       `;
@@ -695,7 +706,7 @@
       Object.keys(registry).forEach(cat => {
         const btn = document.createElement('button');
         btn.onclick = () => filterCategory(cat);
-        btn.className = `btn-action px-3.5 py-1.5 rounded text-xs font-bold capitalize ${currentCategory === cat ? 'bg-brand-accent text-brand-dark' : 'bg-brand-card text-brand-muted hover:text-brand-text border border-brand-border'}`;
+        btn.className = `btn-action px-3.5 py-1.5 rounded text-xs font-bold capitalize ${currentCategory === cat ? 'bg-brand-accent text-white' : 'bg-brand-card text-brand-muted hover:text-brand-text border border-brand-border'}`;
         btn.textContent = cat;
         container.appendChild(btn);
       });
