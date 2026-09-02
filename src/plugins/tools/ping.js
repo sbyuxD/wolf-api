@@ -1,7 +1,9 @@
 export default {
   name: "Server Status",
-  description: "Check server status and memory usage",
+  category: "tools",
+  description: "Check server latency, uptime, and memory usage",
   method: ["GET"],
+  params: {},
   execute: async () => {
     return {
       uptime: `${process.uptime().toFixed(0)}s`,
