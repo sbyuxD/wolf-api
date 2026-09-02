@@ -22,15 +22,19 @@ app.get("/", (req, res) => {
   const endpoints = {};
 
   for (const [routePath, data] of plugins.entries()) {
-    if (!endpoints[data.category]) {
-      endpoints[data.category] = [];
+    const category = data.category || "general";
+
+    if (!endpoints[category]) {
+      endpoints[category] = [];
     }
 
-    endpoints[data.category].push({
+    endpoints[category].push({
       name: data.name,
+      category: data.category,
       endpoint: routePath,
       method: data.method,
-      description: data.description
+      description: data.description,
+      params: data.params
     });
   }
 
