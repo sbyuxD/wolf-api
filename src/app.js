@@ -8,7 +8,7 @@ import {
   resolveSingleRouteOnDemand,
   sendSuccess,
   sendError,
-  validateParams,
+  extractAndValidateInput,
   getCache,
   setCache
 } from "./function.js";
@@ -75,9 +75,9 @@ app.all("/:category/:plugin(*)", async (req, res) => {
     return sendError(res, `Method ${req.method} not allowed`, 405);
   }
 
-  const paramError = validateParams(target.params, req);
-  if (paramError) {
-    return sendError(res, paramError, 400);
+  const { input, error } = extractAndValidateInput(target.params, req);
+  if (error) {
+    return sendError(res, error, 400);
   }
 
   const cacheKey = `${req.method}:${req.originalUrl}`;
@@ -89,7 +89,19 @@ app.all("/:category/:plugin(*)", async (req, res) => {
   }
 
   try {
-    const result = await target.execute(req, res);
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Request execution timed out")), target.timeout || 60000);
+    });
+
+    const executionPromise = target.execute(req, res, {
+      input,
+      query: req.query || {},
+      body: req.body || {},
+      params: req.params || {}
+    });
+
+    const result = await Promise.race([executionPromise, timeoutPromise]);
+
     if (!res.headersSent && result !== undefined) {
       if (target.cache && req.method === "GET") {
         setCache(cacheKey, result, target.cache);
