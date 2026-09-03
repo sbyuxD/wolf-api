@@ -1,3 +1,4 @@
+
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
@@ -12,7 +13,8 @@ import {
   getCache,
   setCache,
   purgeAllCache,
-  ADMIN_CONFIG,
+  OWNER_GITHUB_ACCOUNTS,
+  verifyGitHubToken,
   createSessionToken,
   verifySessionToken
 } from "./function.js";
@@ -42,23 +44,40 @@ app.use(async (req, res, next) => {
   next();
 });
 
-app.post("/api/auth/login", (req, res) => {
-  const { username, password } = req.body || {};
+app.post("/api/auth/github", async (req, res) => {
+  const { token } = req.body || {};
 
-  if (!username || !password) {
-    return sendError(res, "Username dan password wajib diisi", 400);
+  if (!token) {
+    return sendError(res, "GitHub Personal Access Token wajib diisi", 400);
   }
 
-  if (username !== ADMIN_CONFIG.username || password !== ADMIN_CONFIG.password) {
-    return sendError(res, "Kredensial login admin tidak valid", 401);
+  const githubUser = await verifyGitHubToken(token);
+
+  if (!githubUser || !githubUser.login) {
+    return sendError(res, "Token GitHub tidak valid atau telah kedaluwarsa", 401);
   }
 
-  const token = createSessionToken(username);
+  const isOwner = OWNER_GITHUB_ACCOUNTS.map((u) => u.toLowerCase()).includes(
+    githubUser.login.toLowerCase()
+  );
+
+  if (!isOwner) {
+    return sendError(
+      res,
+      `Akses ditolak: Akun GitHub '@${githubUser.login}' bukan terdaftar sebagai Owner`,
+      403
+    );
+  }
+
+  const sessionToken = createSessionToken(githubUser);
+
   return sendSuccess(res, {
-    message: "Login admin berhasil",
-    token,
+    message: "Autentikasi GitHub berhasil",
+    token: sessionToken,
     user: {
-      username,
+      login: githubUser.login,
+      name: githubUser.name || githubUser.login,
+      avatar_url: githubUser.avatar_url,
       role: "owner"
     }
   });
@@ -151,7 +170,7 @@ app.all("/:category/:plugin(*)", async (req, res) => {
     sessionUser = verifySessionToken(authHeader);
 
     if (!sessionUser || sessionUser.role !== "owner") {
-      return sendError(res, "Akses ditolak: Endpoint ini khusus Developer / Owner!", 403);
+      return sendError(res, "Akses ditolak: Endpoint ini khusus Developer / Owner! Silakan login di /admin.html", 403);
     }
   }
 
