@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard — sbyuxD</title>
+  <title>GitHub Owner Gate — sbyuxD</title>
   
   <link rel="icon" type="image/jpeg" href="/media/ZEPH.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -67,7 +67,7 @@
       <a href="/" class="flex items-center gap-3">
         <img src="/media/ZEPH.jpg" alt="Logo" class="w-8 h-8 rounded-md object-cover border border-brand-border" />
         <span class="font-bold text-base text-brand-text">
-          sbyuxD <span class="text-xs font-mono text-brand-accent">/ Owner Gate</span>
+          sbyuxD <span class="text-xs font-mono text-brand-accent">/ GitHub Auth</span>
         </span>
       </a>
 
@@ -86,37 +86,44 @@
     <div id="login-view" class="w-full max-w-md bg-brand-card border border-brand-border rounded-2xl p-8 shadow-2xl">
       <div class="text-center mb-8">
         <div class="w-12 h-12 rounded-xl bg-brand-accent/10 border border-brand-accent/30 text-brand-accent mx-auto flex items-center justify-center mb-3">
-          <i data-lucide="shield-check" class="w-6 h-6"></i>
+          <i data-lucide="github" class="w-6 h-6"></i>
         </div>
-        <h1 class="font-serif text-3xl text-brand-text">Developer Login</h1>
-        <p class="text-xs text-brand-muted mt-1 font-medium">Masuk untuk mengakses endpoint bertanda khusus Owner</p>
+        <h1 class="font-serif text-3xl text-brand-text">GitHub Owner Gate</h1>
+        <p class="text-xs text-brand-muted mt-1 font-medium">Verifikasi akun GitHub resmi untuk membuka akses Developer</p>
       </div>
 
-      <form onsubmit="handleLogin(event)" class="space-y-4">
+      <form onsubmit="handleGitHubLogin(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-bold text-brand-muted mb-1.5 font-mono">USERNAME</label>
-          <input type="text" id="login-username" required placeholder="sbyuxD" class="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-brand-text text-xs font-mono focus:border-brand-accent" />
+          <label class="block text-xs font-bold text-brand-muted mb-1.5 font-mono">GITHUB PERSONAL ACCESS TOKEN</label>
+          <div class="relative">
+            <input type="password" id="github-token" required placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full pl-3.5 pr-10 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-brand-text text-xs font-mono focus:border-brand-accent" />
+            <button type="button" onclick="toggleTokenVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-text">
+              <i data-lucide="eye" id="eye-icon" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <p class="text-[11px] text-brand-muted mt-2 leading-relaxed">
+            Dapatkan token di <a href="https://github.com/settings/tokens" target="_blank" class="text-brand-accent hover:underline">GitHub Settings &gt; Developer Settings &gt; Personal access tokens</a> (cukup izin read-only biasa).
+          </p>
         </div>
 
-        <div>
-          <label class="block text-xs font-bold text-brand-muted mb-1.5 font-mono">PASSWORD</label>
-          <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-brand-text text-xs font-mono focus:border-brand-accent" />
-        </div>
-
-        <button type="submit" id="btn-login-submit" class="w-full py-3 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-bold transition-all mt-2">
-          Verify & Enter Dashboard
+        <button type="submit" id="btn-login-submit" class="w-full py-3 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-bold flex items-center justify-center gap-2 transition-all mt-2">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Verify via GitHub Platform</span>
         </button>
       </form>
     </div>
 
     <div id="dashboard-view" class="hidden w-full max-w-5xl space-y-8">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-brand-card border border-brand-border p-6 rounded-2xl">
-        <div>
-          <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-brand-accent/10 border border-brand-accent/30 text-[11px] font-mono text-brand-accent font-bold mb-2">
-            <i data-lucide="crown" class="w-3.5 h-3.5"></i>
-            <span>AUTHENTICATED OWNER</span>
+        <div class="flex items-center gap-4">
+          <img id="dash-avatar" src="" alt="Avatar" class="w-14 h-14 rounded-full border-2 border-brand-accent object-cover" />
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-brand-accent/10 border border-brand-accent/30 text-[10px] font-mono text-brand-accent font-bold mb-1">
+              <i data-lucide="crown" class="w-3 h-3"></i>
+              <span>VERIFIED GITHUB OWNER</span>
+            </div>
+            <h2 id="dash-name" class="font-serif text-2xl sm:text-3xl text-brand-text">-</h2>
           </div>
-          <h2 class="font-serif text-3xl text-brand-text">Control Center</h2>
         </div>
 
         <button onclick="handlePurgeCache()" class="px-4 py-2.5 rounded-lg bg-brand-surface hover:bg-brand-accent hover:text-white border border-brand-border text-xs font-mono text-brand-text font-bold flex items-center gap-2 transition-all">
@@ -127,15 +134,15 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div class="bg-brand-card border border-brand-border p-6 rounded-xl">
-          <div class="text-xs font-mono text-brand-muted mb-1">Authenticated As</div>
-          <div id="dash-username" class="text-2xl font-bold font-mono text-brand-accent">-</div>
+          <div class="text-xs font-mono text-brand-muted mb-1">GitHub Username</div>
+          <div id="dash-login" class="text-2xl font-bold font-mono text-brand-accent">-</div>
         </div>
         <div class="bg-brand-card border border-brand-border p-6 rounded-xl">
           <div class="text-xs font-mono text-brand-muted mb-1">Server Uptime</div>
           <div id="dash-uptime" class="text-2xl font-bold font-mono text-brand-text">-</div>
         </div>
         <div class="bg-brand-card border border-brand-border p-6 rounded-xl">
-          <div class="text-xs font-mono text-brand-muted mb-1">RAM Consumption</div>
+          <div class="text-xs font-mono text-brand-muted mb-1">Memory Usage</div>
           <div id="dash-memory" class="text-2xl font-bold font-mono text-emerald-400">-</div>
         </div>
       </div>
@@ -148,7 +155,7 @@
       <div id="tester-box" class="hidden bg-brand-card border border-brand-border rounded-2xl p-6 space-y-4">
         <div class="flex items-center justify-between border-b border-brand-border pb-3">
           <h4 id="tester-title" class="font-bold text-sm text-brand-text font-mono">Endpoint Test</h4>
-          <span class="px-2 py-0.5 rounded bg-brand-accent/20 text-brand-accent font-mono text-[10px] font-bold">TOKEN ATTACHED</span>
+          <span class="px-2 py-0.5 rounded bg-brand-accent/20 text-brand-accent font-mono text-[10px] font-bold">SESSION SIGNATURE ATTACHED</span>
         </div>
 
         <div id="tester-inputs" class="space-y-3"></div>
@@ -175,7 +182,7 @@
         title,
         position: 'center',
         showConfirmButton: false,
-        timer: 1600,
+        timer: 1800,
         customClass: { popup: 'custom-swal-center' },
         iconColor: icon === 'success' ? '#5a9e6f' : '#ea580c'
       });
@@ -204,36 +211,46 @@
       }
     });
 
-    async function handleLogin(e) {
+    function toggleTokenVisibility() {
+      const input = document.getElementById("github-token");
+      const icon = document.getElementById("eye-icon");
+      const isPass = input.type === "password";
+      input.type = isPass ? "text" : "password";
+      icon.setAttribute("data-lucide", isPass ? "eye-off" : "eye");
+      lucide.createIcons();
+    }
+
+    async function handleGitHubLogin(e) {
       e.preventDefault();
-      const username = document.getElementById("login-username").value.trim();
-      const password = document.getElementById("login-password").value.trim();
+      const token = document.getElementById("github-token").value.trim();
       const btn = document.getElementById("btn-login-submit");
 
       btn.disabled = true;
-      btn.textContent = "Verifying...";
+      btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span>Verifying on GitHub...</span>';
+      lucide.createIcons();
 
       try {
-        const res = await fetch("/api/auth/login", {
+        const res = await fetch("/api/auth/github", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ token })
         });
 
         const data = await res.json();
         if (!res.ok || !data.status) {
-          throw new Error(data.message || "Login failed");
+          throw new Error(data.message || "Gagal verifikasi akun GitHub");
         }
 
         currentToken = data.result.token;
         localStorage.setItem("sbyuxd_admin_token", currentToken);
-        notify("success", "Welcome, Owner");
+        notify("success", `Verified as @${data.result.user.login}`);
         await verifyAndShowDashboard();
       } catch (err) {
         notify("error", err.message);
       } finally {
         btn.disabled = false;
-        btn.textContent = "Verify & Enter Dashboard";
+        btn.innerHTML = '<i data-lucide="shield-check" class="w-4 h-4"></i><span>Verify via GitHub Platform</span>';
+        lucide.createIcons();
       }
     }
 
@@ -252,7 +269,10 @@
         document.getElementById("dashboard-view").classList.remove("hidden");
         document.getElementById("btn-logout").classList.remove("hidden");
 
-        document.getElementById("dash-username").textContent = data.result.user.username;
+        const u = data.result.user;
+        document.getElementById("dash-name").textContent = u.name || u.login;
+        document.getElementById("dash-login").textContent = `@${u.login}`;
+        document.getElementById("dash-avatar").src = u.avatar_url || "/media/ZEPH.jpg";
         document.getElementById("dash-uptime").textContent = data.result.system.uptime;
         document.getElementById("dash-memory").textContent = data.result.system.memory;
 
@@ -284,7 +304,7 @@
                 <span class="font-bold text-sm text-brand-text">${ep.name}</span>
                 <span class="px-2 py-0.5 rounded bg-brand-accent/20 text-brand-accent text-[10px] font-mono font-bold">OWNER</span>
               </div>
-              <p class="text-xs text-brand-muted mb-4">${ep.description}</p>
+              <p class="text-xs text-brand-muted mb-4 font-medium">${ep.description}</p>
             </div>
             <button onclick='openOwnerTester(${JSON.stringify(ep)})' class="w-full py-2 rounded bg-brand-card hover:bg-brand-accent hover:text-white border border-brand-border text-xs font-bold text-brand-text transition-colors">
               Open Dev Runner
