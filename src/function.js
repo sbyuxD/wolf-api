@@ -8,15 +8,35 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CREATOR = "sbyuxD";
 const SECRET_SIGNATURE = "SBYUXD_CORE_HMAC_SECRET_2026";
 
-export const ADMIN_CONFIG = {
-  username: "sbyuxD",
-  password: "password123"
+export const OWNER_GITHUB_ACCOUNTS = ["sbyuxd"];
+
+export const verifyGitHubToken = async (githubToken) => {
+  if (!githubToken || typeof githubToken !== "string") return null;
+
+  try {
+    const res = await fetch("https://api.github.com/user", {
+      headers: {
+        "Authorization": `Bearer ${githubToken.trim()}`,
+        "User-Agent": "sbyuxD-API-Engine",
+        "Accept": "application/vnd.github+json"
+      }
+    });
+
+    if (!res.ok) return null;
+    const user = await res.json();
+    return user;
+  } catch {
+    return null;
+  }
 };
 
-export const createSessionToken = (username) => {
+export const createSessionToken = (userData) => {
   const payload = Buffer.from(
     JSON.stringify({
-      username,
+      login: userData.login,
+      id: userData.id,
+      name: userData.name || userData.login,
+      avatar_url: userData.avatar_url,
       role: "owner",
       exp: Date.now() + 7 * 24 * 60 * 60 * 1000
     })
