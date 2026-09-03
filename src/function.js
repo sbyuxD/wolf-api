@@ -1,22 +1,29 @@
 import fs from "node:fs";
 import path from "node:path";
-import crypto from "node:crypto";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import chokidar from "chokidar";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CREATOR = "sbyuxD";
-const SECRET_SIGNATURE = "SBYUXD_CORE_HMAC_SECRET_2026";
 
-export const OWNER_GITHUB_ACCOUNTS = ["sbyuxD"];
+export const OWNER_USERNAME = "sbyuxD";
 
-export const verifyGitHubToken = async (githubToken) => {
-  if (!githubToken || typeof githubToken !== "string") return null;
+const ownerTokenCache = new Map();
+
+export const validateGitHubOwner = async (token) => {
+  if (!token || typeof token !== "string") return null;
+  const cleanToken = token.replace(/^Bearer\s+/i, "").trim();
+  if (!cleanToken) return null;
+
+  const cached = ownerTokenCache.get(cleanToken);
+  if (cached && Date.now() < cached.exp) {
+    return cached.user;
+  }
 
   try {
     const res = await fetch("https://api.github.com/user", {
       headers: {
-        "Authorization": `Bearer ${githubToken.trim()}`,
+        "Authorization": `Bearer ${cleanToken}`,
         "User-Agent": "sbyuxD-API-Engine",
         "Accept": "application/vnd.github+json"
       }
@@ -24,49 +31,15 @@ export const verifyGitHubToken = async (githubToken) => {
 
     if (!res.ok) return null;
     const user = await res.json();
-    return user;
-  } catch {
+
+    if (user.login && user.login.toLowerCase() === OWNER_USERNAME.toLowerCase()) {
+      ownerTokenCache.set(cleanToken, {
+        user,
+        exp: Date.now() + 10 * 60 * 1000
+      });
+      return user;
+    }
     return null;
-  }
-};
-
-export const createSessionToken = (userData) => {
-  const payload = Buffer.from(
-    JSON.stringify({
-      login: userData.login,
-      id: userData.id,
-      name: userData.name || userData.login,
-      avatar_url: userData.avatar_url,
-      role: "owner",
-      exp: Date.now() + 7 * 24 * 60 * 60 * 1000
-    })
-  ).toString("base64url");
-
-  const signature = crypto
-    .createHmac("sha256", SECRET_SIGNATURE)
-    .update(payload)
-    .digest("base64url");
-
-  return `${payload}.${signature}`;
-};
-
-export const verifySessionToken = (token) => {
-  if (!token || typeof token !== "string") return null;
-  const parts = token.replace(/^Bearer\s+/i, "").split(".");
-  if (parts.length !== 2) return null;
-
-  const [payloadB64, signature] = parts;
-  const expectedSig = crypto
-    .createHmac("sha256", SECRET_SIGNATURE)
-    .update(payloadB64)
-    .digest("base64url");
-
-  if (signature !== expectedSig) return null;
-
-  try {
-    const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString());
-    if (Date.now() > payload.exp) return null;
-    return payload;
   } catch {
     return null;
   }
