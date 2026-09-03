@@ -6,6 +6,17 @@ import chokidar from "chokidar";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CREATOR = "sbyuxD";
 
+const USER_AGENTS = [
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1"
+];
+
+export const getRandomUserAgent = () => {
+  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+};
+
 export const getPluginsDir = () => {
   const possibleDirs = [
     path.join(process.cwd(), "src", "plugins"),
@@ -41,7 +52,7 @@ export const sendError = (res, message = "Internal Server Error", statusCode = 5
   });
 };
 
-export const safeFetch = async (url, options = {}, timeoutMs = 15000) => {
+export const safeFetch = async (url, options = {}, timeoutMs = 20000) => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -50,7 +61,7 @@ export const safeFetch = async (url, options = {}, timeoutMs = 15000) => {
       ...options,
       signal: controller.signal,
       headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "User-Agent": getRandomUserAgent(),
         ...(options.headers || {})
       }
     });
@@ -58,6 +69,15 @@ export const safeFetch = async (url, options = {}, timeoutMs = 15000) => {
   } finally {
     clearTimeout(timer);
   }
+};
+
+export const downloadBuffer = async (url, options = {}, timeoutMs = 30000) => {
+  const res = await safeFetch(url, options, timeoutMs);
+  if (!res.ok) {
+    throw new Error(`Failed to download buffer from target (${res.status})`);
+  }
+  const arrayBuf = await res.arrayBuffer();
+  return Buffer.from(arrayBuf);
 };
 
 const cacheStorage = new Map();
@@ -75,27 +95,59 @@ export const getCache = (key) => {
 };
 
 export const setCache = (key, data, ttlSeconds = 60) => {
+  if (cacheStorage.size > 2000) {
+    const oldestKey = cacheStorage.keys().next().value;
+    cacheStorage.delete(oldestKey);
+  }
+
   cacheStorage.set(key, {
     data,
     expireAt: Date.now() + ttlSeconds * 1000
   });
 };
 
-export const validateParams = (schema, req) => {
-  if (!schema || typeof schema !== "object") return null;
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of cacheStorage.entries()) {
+    if (now > v.expireAt) {
+      cacheStorage.delete(k);
+    }
+  }
+}, 300000);
+
+export const extractAndValidateInput = (schema, req) => {
+  const input = { ...(req.query || {}), ...(req.body || {}) };
+
+  if (!schema || typeof schema !== "object") {
+    return { input, error: null };
+  }
 
   for (const [key, config] of Object.entries(schema)) {
     const isRequired = typeof config === "object" ? config.required : false;
-    if (isRequired) {
-      const val = req.query[key] || req.body?.[key];
-      if (val === undefined || val === null || val === "") {
+    let val = input[key];
+
+    if (val === undefined || val === null || val === "") {
+      if (isRequired) {
         const desc = typeof config === "object" && config.description ? ` (${config.description})` : "";
-        return `Parameter '${key}' wajib diisi${desc}`;
+        return { input: null, error: `Parameter '${key}' wajib diisi${desc}` };
+      }
+      continue;
+    }
+
+    if (typeof config === "object" && config.type) {
+      if (config.type === "number") {
+        const num = Number(val);
+        if (isNaN(num)) {
+          return { input: null, error: `Parameter '${key}' harus berupa angka numerik` };
+        }
+        input[key] = num;
+      } else if (config.type === "boolean") {
+        input[key] = val === "true" || val === true || val === 1 || val === "1";
       }
     }
   }
 
-  return null;
+  return { input, error: null };
 };
 
 const parsePluginPath = (filePath, baseDir) => {
@@ -140,6 +192,7 @@ export const loadPlugin = async (filePath) => {
       description: handler.description || "",
       params: handler.params || {},
       cache: typeof handler.cache === "number" ? handler.cache : null,
+      timeout: typeof handler.timeout === "number" ? handler.timeout : 60000,
       execute: handler.execute
     };
 
