@@ -1,16 +1,61 @@
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import chokidar from "chokidar";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CREATOR = "sbyuxD";
+const SECRET_SIGNATURE = "SBYUXD_CORE_HMAC_SECRET_2026";
+
+export const ADMIN_CONFIG = {
+  username: "sbyuxD",
+  password: "password123"
+};
+
+export const createSessionToken = (username) => {
+  const payload = Buffer.from(
+    JSON.stringify({
+      username,
+      role: "owner",
+      exp: Date.now() + 7 * 24 * 60 * 60 * 1000
+    })
+  ).toString("base64url");
+
+  const signature = crypto
+    .createHmac("sha256", SECRET_SIGNATURE)
+    .update(payload)
+    .digest("base64url");
+
+  return `${payload}.${signature}`;
+};
+
+export const verifySessionToken = (token) => {
+  if (!token || typeof token !== "string") return null;
+  const parts = token.replace(/^Bearer\s+/i, "").split(".");
+  if (parts.length !== 2) return null;
+
+  const [payloadB64, signature] = parts;
+  const expectedSig = crypto
+    .createHmac("sha256", SECRET_SIGNATURE)
+    .update(payloadB64)
+    .digest("base64url");
+
+  if (signature !== expectedSig) return null;
+
+  try {
+    const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString());
+    if (Date.now() > payload.exp) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+};
 
 const USER_AGENTS = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
-  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1"
+  "Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
 ];
 
 export const getRandomUserAgent = () => {
@@ -71,15 +116,6 @@ export const safeFetch = async (url, options = {}, timeoutMs = 20000) => {
   }
 };
 
-export const downloadBuffer = async (url, options = {}, timeoutMs = 30000) => {
-  const res = await safeFetch(url, options, timeoutMs);
-  if (!res.ok) {
-    throw new Error(`Failed to download buffer from target (${res.status})`);
-  }
-  const arrayBuf = await res.arrayBuffer();
-  return Buffer.from(arrayBuf);
-};
-
 const cacheStorage = new Map();
 
 export const getCache = (key) => {
@@ -106,14 +142,11 @@ export const setCache = (key, data, ttlSeconds = 60) => {
   });
 };
 
-setInterval(() => {
-  const now = Date.now();
-  for (const [k, v] of cacheStorage.entries()) {
-    if (now > v.expireAt) {
-      cacheStorage.delete(k);
-    }
-  }
-}, 300000);
+export const purgeAllCache = () => {
+  const size = cacheStorage.size;
+  cacheStorage.clear();
+  return size;
+};
 
 export const extractAndValidateInput = (schema, req) => {
   const input = { ...(req.query || {}), ...(req.body || {}) };
@@ -190,6 +223,7 @@ export const loadPlugin = async (filePath) => {
       path: parsed.routePath,
       method: (handler.method || ["GET"]).map((m) => m.toUpperCase()),
       description: handler.description || "",
+      owner: Boolean(handler.owner),
       params: handler.params || {},
       cache: typeof handler.cache === "number" ? handler.cache : null,
       timeout: typeof handler.timeout === "number" ? handler.timeout : 60000,
@@ -197,7 +231,7 @@ export const loadPlugin = async (filePath) => {
     };
 
     plugins.set(parsed.routePath, pluginObj);
-    console.log(`[✓] LOADED: ${pluginObj.method.join("/")} ${parsed.routePath}`);
+    console.log(`[✓] LOADED: ${pluginObj.method.join("/")} ${parsed.routePath} [Owner: ${pluginObj.owner}]`);
     return pluginObj;
   } catch (err) {
     console.error(`[ㄨ] Gagal memuat plugin ${filePath}:`, err.message);
