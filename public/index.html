@@ -210,6 +210,11 @@
         transform: translateY(0);
       }
     }
+    .json-key { color: #93c5fd; font-weight: 600; }
+    .json-string { color: #fdba74; }
+    .json-number { color: #cbd5e1; }
+    .json-boolean { color: #f472b6; font-weight: 700; }
+    .json-null { color: #a8a29e; font-style: italic; }
   </style>
 </head>
 <body class="bg-brand-dark text-brand-text min-h-screen flex flex-col font-sans antialiased selection:bg-brand-accent selection:text-brand-dark">
@@ -480,8 +485,8 @@
           </button>
         </div>
 
-        <div class="rounded-md bg-[#0c0b0a] border border-brand-border p-4 overflow-x-auto max-h-64">
-          <pre id="modal-response-body" class="font-mono text-xs text-brand-text leading-relaxed"></pre>
+        <div class="rounded-md bg-[#0c0b0a] border border-brand-border p-4 overflow-x-auto max-h-64 select-text">
+          <pre id="modal-response-body" class="font-mono text-xs leading-relaxed text-[#f4ede4]"></pre>
         </div>
       </div>
     </div>
@@ -498,6 +503,7 @@
     let activeEndpoint = null;
     let currentCategory = 'all';
     let isTerminalTyping = false;
+    let rawResponseText = '';
 
     const notify = (icon, title) => {
       Swal.fire({
@@ -510,6 +516,26 @@
           popup: 'custom-swal-center'
         },
         iconColor: icon === 'success' ? '#5a9e6f' : (icon === 'info' ? '#ea580c' : '#c85a54')
+      });
+    };
+
+    const formatCodeHighlight = (data) => {
+      let json = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'json-key';
+          } else {
+            cls = 'json-string';
+          }
+        } else if (/true|false/.test(match)) {
+          cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+          cls = 'json-null';
+        }
+        return `<span class="${cls}">${match}</span>`;
       });
     };
 
@@ -904,13 +930,15 @@
         const duration = Math.round(performance.now() - start);
         const json = await response.json();
 
+        rawResponseText = JSON.stringify(json, null, 2);
+
         statusPill.textContent = `${response.status} ${response.statusText || 'OK'}`;
         statusPill.className = response.ok 
           ? 'text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
           : 'text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20';
 
         timePill.textContent = `${duration}ms`;
-        responseBody.textContent = JSON.stringify(json, null, 2);
+        responseBody.innerHTML = formatCodeHighlight(json);
         
         responseWrapper.classList.remove('hidden');
         responseWrapper.classList.remove('response-reveal');
@@ -924,10 +952,13 @@
         }
       } catch (err) {
         const duration = Math.round(performance.now() - start);
+        const errorObj = { status: false, message: err.message };
+        rawResponseText = JSON.stringify(errorObj, null, 2);
+
         statusPill.textContent = 'Error';
         statusPill.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20';
         timePill.textContent = `${duration}ms`;
-        responseBody.textContent = JSON.stringify({ status: false, message: err.message }, null, 2);
+        responseBody.innerHTML = formatCodeHighlight(errorObj);
         
         responseWrapper.classList.remove('hidden');
         responseWrapper.classList.remove('response-reveal');
@@ -948,9 +979,8 @@
     }
 
     function copyResponse() {
-      const text = document.getElementById('modal-response-body').textContent;
-      if (text) {
-        navigator.clipboard.writeText(text);
+      if (rawResponseText) {
+        navigator.clipboard.writeText(rawResponseText);
         notify('info', 'JSON copied');
       }
     }
