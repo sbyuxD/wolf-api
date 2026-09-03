@@ -700,26 +700,29 @@
     }
 
     async function fetchEndpoints() {
-      try {
-        const res = await fetch('/api/endpoints');
-        const data = await res.json();
+  try {
+    const res = await fetch(`/api/endpoints?_t=${Date.now()}`, {
+      cache: "no-store",
+      headers: { "Pragma": "no-cache", "Cache-Control": "no-cache" }
+    });
+    const data = await res.json();
 
-        if (data.status && data.result) {
-          registry = data.result.endpoints || {};
-          document.getElementById('stat-total').textContent = data.result.total || 0;
-          document.getElementById('stat-categories').textContent = Object.keys(registry).length;
+    if (data.status && data.result) {
+      registry = data.result.endpoints || {};
+      document.getElementById('stat-total').textContent = data.result.total || 0;
+      document.getElementById('stat-categories').textContent = Object.keys(registry).length;
 
-          buildCategoryTabs();
-          renderEndpoints();
-        }
-      } catch (err) {
-        document.getElementById('endpoint-container').innerHTML = `
-          <div class="text-center py-12 text-rose-400 text-xs font-mono">
-            Failed to retrieve endpoints from server.
-          </div>
-        `;
-      }
+      buildCategoryTabs();
+      renderEndpoints();
     }
+  } catch (err) {
+    document.getElementById('endpoint-container').innerHTML = `
+      <div class="text-center py-12 text-rose-400 text-xs font-mono">
+        Failed to retrieve endpoints from server.
+      </div>
+    `;
+  }
+}
 
     function buildCategoryTabs() {
       const container = document.getElementById('category-tabs');
