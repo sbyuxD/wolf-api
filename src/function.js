@@ -71,9 +71,11 @@ export const getPluginsDir = () => {
   ];
 
   for (const dir of possibleDirs) {
-    if (fs.existsSync(dir)) {
-      return dir;
-    }
+    try {
+      if (fs.existsSync(dir)) {
+        return dir;
+      }
+    } catch {}
   }
 
   return possibleDirs[0];
@@ -148,6 +150,19 @@ export const purgeAllCache = () => {
   return size;
 };
 
+const cleanTimer = setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of cacheStorage.entries()) {
+    if (now > v.expireAt) {
+      cacheStorage.delete(k);
+    }
+  }
+}, 300000);
+
+if (cleanTimer.unref) {
+  cleanTimer.unref();
+}
+
 export const extractAndValidateInput = (schema, req) => {
   const input = { ...(req.query || {}), ...(req.body || {}) };
 
@@ -213,7 +228,6 @@ export const loadPlugin = async (filePath) => {
     const handler = module.default || module;
 
     if (!handler || typeof handler.execute !== "function") {
-      console.warn(`[WARN] ${filePath} tidak mengekspor execute()`);
       return null;
     }
 
@@ -231,10 +245,9 @@ export const loadPlugin = async (filePath) => {
     };
 
     plugins.set(parsed.routePath, pluginObj);
-    console.log(`[✓] LOADED: ${pluginObj.method.join("/")} ${parsed.routePath} [Owner: ${pluginObj.owner}]`);
     return pluginObj;
   } catch (err) {
-    console.error(`[ㄨ] Gagal memuat plugin ${filePath}:`, err.message);
+    console.error(`[Plugin Load Failed] ${filePath}:`, err.message);
     return null;
   }
 };
@@ -244,39 +257,40 @@ export const unloadPlugin = (filePath) => {
   const parsed = parsePluginPath(filePath, baseDir);
   if (parsed && plugins.has(parsed.routePath)) {
     plugins.delete(parsed.routePath);
-    console.log(`[UNLOADED] ${parsed.routePath}`);
   }
 };
 
 const getFiles = (dir) => {
   let results = [];
-  if (!fs.existsSync(dir)) return results;
-
-  const list = fs.readdirSync(dir, { withFileTypes: true });
-  for (const item of list) {
-    const fullPath = path.join(dir, item.name);
-    if (item.isDirectory()) {
-      results = results.concat(getFiles(fullPath));
-    } else if (item.isFile() && (item.name.endsWith(".js") || item.name.endsWith(".mjs"))) {
-      results.push(fullPath);
+  try {
+    if (!fs.existsSync(dir)) return results;
+    const list = fs.readdirSync(dir, { withFileTypes: true });
+    for (const item of list) {
+      const fullPath = path.join(dir, item.name);
+      if (item.isDirectory()) {
+        results = results.concat(getFiles(fullPath));
+      } else if (item.isFile() && (item.name.endsWith(".js") || item.name.endsWith(".mjs"))) {
+        results.push(fullPath);
+      }
     }
+  } catch (err) {
+    console.error(`[ReadDir Error]:`, err.message);
   }
-
   return results;
 };
 
 export const loadAllPlugins = async () => {
   const dir = getPluginsDir();
-  if (!fs.existsSync(dir)) {
-    try {
-      fs.mkdirSync(dir, { recursive: true });
-    } catch {}
-    return;
-  }
-
-  const files = getFiles(dir);
-  for (const file of files) {
-    await loadPlugin(file);
+  try {
+    if (!fs.existsSync(dir)) return;
+    const files = getFiles(dir);
+    for (const file of files) {
+      try {
+        await loadPlugin(file);
+      } catch {}
+    }
+  } catch (err) {
+    console.error(`[LoadAllPlugins Error]:`, err.message);
   }
 };
 
@@ -289,9 +303,11 @@ export const resolveSingleRouteOnDemand = async (category, pluginName) => {
   ];
 
   for (const filePath of possiblePaths) {
-    if (fs.existsSync(filePath)) {
-      return await loadPlugin(filePath);
-    }
+    try {
+      if (fs.existsSync(filePath)) {
+        return await loadPlugin(filePath);
+      }
+    } catch {}
   }
 
   return null;
@@ -299,19 +315,20 @@ export const resolveSingleRouteOnDemand = async (category, pluginName) => {
 
 export const watchPlugins = () => {
   const dir = getPluginsDir();
-  if (!fs.existsSync(dir)) return;
+  try {
+    if (!fs.existsSync(dir)) return;
+    const watcher = chokidar.watch(dir, {
+      ignoreInitial: true,
+      persistent: true,
+      awaitWriteFinish: {
+        stabilityThreshold: 300,
+        pollInterval: 100
+      }
+    });
 
-  const watcher = chokidar.watch(dir, {
-    ignoreInitial: true,
-    persistent: true,
-    awaitWriteFinish: {
-      stabilityThreshold: 300,
-      pollInterval: 100
-    }
-  });
-
-  watcher
-    .on("add", loadPlugin)
-    .on("change", loadPlugin)
-    .on("unlink", unloadPlugin);
+    watcher
+      .on("add", loadPlugin)
+      .on("change", loadPlugin)
+      .on("unlink", unloadPlugin);
+  } catch {}
 };
