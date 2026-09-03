@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GitHub Owner Gate — sbyuxD</title>
+  <title>Admin Dashboard — sbyuxD</title>
   
   <link rel="icon" type="image/jpeg" href="/media/ZEPH.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -67,7 +67,7 @@
       <a href="/" class="flex items-center gap-3">
         <img src="/media/ZEPH.jpg" alt="Logo" class="w-8 h-8 rounded-md object-cover border border-brand-border" />
         <span class="font-bold text-base text-brand-text">
-          sbyuxD <span class="text-xs font-mono text-brand-accent">/ GitHub Auth</span>
+          sbyuxD <span class="text-xs font-mono text-brand-accent">/ Owner Gate</span>
         </span>
       </a>
 
@@ -75,54 +75,61 @@
         <a href="/" class="px-3 py-1.5 rounded-md border border-brand-border text-xs font-semibold text-brand-muted hover:text-brand-text">
           Public UI
         </a>
-        <button id="btn-logout" onclick="handleLogout()" class="hidden px-3.5 py-1.5 rounded-md bg-brand-border hover:bg-brand-accent hover:text-white text-xs font-bold text-brand-text transition-colors">
-          Logout
+        <button id="disconnectBtn" onclick="handleDisconnect()" class="hidden px-3.5 py-1.5 rounded-md bg-brand-border hover:bg-rose-900/40 hover:text-rose-400 hover:border-rose-800 text-xs font-bold text-brand-text transition-colors border border-transparent">
+          Disconnect
         </button>
       </div>
     </div>
   </nav>
 
   <main class="flex-1 flex items-center justify-center p-6">
-    <div id="login-view" class="w-full max-w-md bg-brand-card border border-brand-border rounded-2xl p-8 shadow-2xl">
+    <div id="authSection" class="w-full max-w-md bg-brand-card border border-brand-border rounded-2xl p-8 shadow-2xl">
       <div class="text-center mb-8">
         <div class="w-12 h-12 rounded-xl bg-brand-accent/10 border border-brand-accent/30 text-brand-accent mx-auto flex items-center justify-center mb-3">
           <i data-lucide="github" class="w-6 h-6"></i>
         </div>
-        <h1 class="font-serif text-3xl text-brand-text">GitHub Owner Gate</h1>
-        <p class="text-xs text-brand-muted mt-1 font-medium">Verifikasi akun GitHub resmi untuk membuka akses Developer</p>
+        <h1 class="font-serif text-3xl text-brand-text">GitHub Owner Login</h1>
+        <p class="text-xs text-brand-muted mt-1 font-medium">Autentikasi langsung menggunakan akun GitHub kamu</p>
       </div>
 
-      <form onsubmit="handleGitHubLogin(event)" class="space-y-4">
+      <div id="authError" class="hidden mb-4 p-3 rounded-lg bg-rose-950/40 border border-rose-800 text-rose-300 text-xs font-mono">
+        <span id="authErrorText">-</span>
+      </div>
+
+      <div class="space-y-4">
         <div>
-          <label class="block text-xs font-bold text-brand-muted mb-1.5 font-mono">GITHUB PERSONAL ACCESS TOKEN</label>
+          <label class="block text-xs font-bold text-brand-muted mb-1.5 font-mono">NAMA PENGGUNA (GITHUB USERNAME)</label>
+          <input type="text" id="usernameInput" placeholder="sbyuxD" class="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-brand-text text-xs font-mono focus:border-brand-accent" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-brand-muted mb-1.5 font-mono">PERSONAL ACCESS TOKEN</label>
           <div class="relative">
-            <input type="password" id="github-token" required placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full pl-3.5 pr-10 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-brand-text text-xs font-mono focus:border-brand-accent" />
-            <button type="button" onclick="toggleTokenVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-text">
+            <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full pl-3.5 pr-10 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-brand-text text-xs font-mono focus:border-brand-accent" />
+            <button type="button" id="toggleTokenBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-text">
               <i data-lucide="eye" id="eye-icon" class="w-4 h-4"></i>
             </button>
           </div>
-          <p class="text-[11px] text-brand-muted mt-2 leading-relaxed">
-            Dapatkan token di <a href="https://github.com/settings/tokens" target="_blank" class="text-brand-accent hover:underline">GitHub Settings &gt; Developer Settings &gt; Personal access tokens</a> (cukup izin read-only biasa).
-          </p>
         </div>
 
-        <button type="submit" id="btn-login-submit" class="w-full py-3 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-bold flex items-center justify-center gap-2 transition-all mt-2">
-          <i data-lucide="shield-check" class="w-4 h-4"></i>
-          <span>Verify via GitHub Platform</span>
+        <button type="button" id="connectBtn" onclick="handleConnect()" class="w-full py-3 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-bold flex items-center justify-center gap-2 transition-all mt-2">
+          <span>Menghubungkan...</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
-      </form>
+      </div>
     </div>
 
-    <div id="dashboard-view" class="hidden w-full max-w-5xl space-y-8">
+    <div id="dashboardSection" class="hidden w-full max-w-5xl space-y-8">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-brand-card border border-brand-border p-6 rounded-2xl">
         <div class="flex items-center gap-4">
-          <img id="dash-avatar" src="" alt="Avatar" class="w-14 h-14 rounded-full border-2 border-brand-accent object-cover" />
+          <img id="userAvatar" src="" alt="Avatar" class="w-14 h-14 rounded-full border-2 border-brand-accent object-cover" />
           <div>
             <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-brand-accent/10 border border-brand-accent/30 text-[10px] font-mono text-brand-accent font-bold mb-1">
               <i data-lucide="crown" class="w-3 h-3"></i>
-              <span>VERIFIED GITHUB OWNER</span>
+              <span>AUTHENTICATED OWNER</span>
             </div>
-            <h2 id="dash-name" class="font-serif text-2xl sm:text-3xl text-brand-text">-</h2>
+            <h2 id="userDisplayName" class="font-serif text-2xl sm:text-3xl text-brand-text">-</h2>
+            <div id="userLoginName" class="text-xs font-mono text-brand-muted">-</div>
           </div>
         </div>
 
@@ -134,16 +141,16 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div class="bg-brand-card border border-brand-border p-6 rounded-xl">
-          <div class="text-xs font-mono text-brand-muted mb-1">GitHub Username</div>
-          <div id="dash-login" class="text-2xl font-bold font-mono text-brand-accent">-</div>
+          <div class="text-xs font-mono text-brand-muted mb-1">GitHub Role</div>
+          <div class="text-2xl font-bold font-mono text-brand-accent">Owner / Verified</div>
         </div>
         <div class="bg-brand-card border border-brand-border p-6 rounded-xl">
-          <div class="text-xs font-mono text-brand-muted mb-1">Server Uptime</div>
-          <div id="dash-uptime" class="text-2xl font-bold font-mono text-brand-text">-</div>
+          <div class="text-xs font-mono text-brand-muted mb-1">API Engine Status</div>
+          <div class="text-2xl font-bold font-mono text-emerald-400">Live Running</div>
         </div>
         <div class="bg-brand-card border border-brand-border p-6 rounded-xl">
-          <div class="text-xs font-mono text-brand-muted mb-1">Memory Usage</div>
-          <div id="dash-memory" class="text-2xl font-bold font-mono text-emerald-400">-</div>
+          <div class="text-xs font-mono text-brand-muted mb-1">Session Token</div>
+          <div class="text-2xl font-bold font-mono text-brand-text">Active (Direct)</div>
         </div>
       </div>
 
@@ -155,7 +162,7 @@
       <div id="tester-box" class="hidden bg-brand-card border border-brand-border rounded-2xl p-6 space-y-4">
         <div class="flex items-center justify-between border-b border-brand-border pb-3">
           <h4 id="tester-title" class="font-bold text-sm text-brand-text font-mono">Endpoint Test</h4>
-          <span class="px-2 py-0.5 rounded bg-brand-accent/20 text-brand-accent font-mono text-[10px] font-bold">SESSION SIGNATURE ATTACHED</span>
+          <span class="px-2 py-0.5 rounded bg-brand-accent/20 text-brand-accent font-mono text-[10px] font-bold">GITHUB TOKEN INJECTED</span>
         </div>
 
         <div id="tester-inputs" class="space-y-3"></div>
@@ -173,7 +180,31 @@
   </main>
 
   <script>
-    let currentToken = localStorage.getItem("sbyuxd_admin_token") || null;
+    const API_BASE = "https://api.github.com";
+
+    const state = {
+      token: localStorage.getItem("sbyuxd_gh_token") || null,
+      username: localStorage.getItem("sbyuxd_gh_user") || null,
+      user: null
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    const dom = {
+      authSection: $("authSection"),
+      dashboardSection: $("dashboardSection"),
+      usernameInput: $("usernameInput"),
+      tokenInput: $("tokenInput"),
+      toggleTokenBtn: $("toggleTokenBtn"),
+      connectBtn: $("connectBtn"),
+      authError: $("authError"),
+      authErrorText: $("authErrorText"),
+      disconnectBtn: $("disconnectBtn"),
+      userDisplayName: $("userDisplayName"),
+      userLoginName: $("userLoginName"),
+      userAvatar: $("userAvatar")
+    };
+
     let activeOwnerEndpoint = null;
 
     const notify = (icon, title) => {
@@ -204,82 +235,107 @@
       });
     };
 
-    window.addEventListener("DOMContentLoaded", async () => {
-      lucide.createIcons();
-      if (currentToken) {
-        await verifyAndShowDashboard();
+    async function apiRequest(endpoint, options = {}) {
+      const headers = {
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+      };
+      if (state.token) {
+        headers["Authorization"] = "Bearer " + state.token;
       }
-    });
+      const resp = await fetch(API_BASE + endpoint, {
+        ...options,
+        headers: { ...headers, ...options.headers }
+      });
 
-    function toggleTokenVisibility() {
-      const input = document.getElementById("github-token");
-      const icon = document.getElementById("eye-icon");
-      const isPass = input.type === "password";
-      input.type = isPass ? "text" : "password";
-      icon.setAttribute("data-lucide", isPass ? "eye-off" : "eye");
-      lucide.createIcons();
+      if (resp.status === 401) {
+        throw new Error("Token akses tidak valid atau telah kedaluwarsa.");
+      }
+      if (!resp.ok) {
+        throw new Error("API error: " + resp.status + " " + resp.statusText);
+      }
+      return resp.json();
     }
 
-    async function handleGitHubLogin(e) {
-      e.preventDefault();
-      const token = document.getElementById("github-token").value.trim();
-      const btn = document.getElementById("btn-login-submit");
+    async function validateToken() {
+      return apiRequest("/user");
+    }
 
-      btn.disabled = true;
-      btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span>Verifying on GitHub...</span>';
+    async function handleConnect() {
+      const username = dom.usernameInput.value.trim();
+      const token = dom.tokenInput.value.trim();
+
+      if (!username || !token) {
+        showAuthError("Harap masukkan nama pengguna dan token.");
+        return;
+      }
+
+      state.username = username;
+      state.token = token;
+      dom.authError.classList.add("hidden");
+
+      dom.connectBtn.disabled = true;
+      dom.connectBtn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span>Menghubungkan...</span>';
       lucide.createIcons();
 
       try {
-        const res = await fetch("/api/auth/github", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token })
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.status) {
-          throw new Error(data.message || "Gagal verifikasi akun GitHub");
+        const user = await validateToken();
+        
+        if (user.login.toLowerCase() !== username.toLowerCase()) {
+          throw new Error(`Token milik akun @${user.login}, bukan @${username}`);
         }
 
-        currentToken = data.result.token;
-        localStorage.setItem("sbyuxd_admin_token", currentToken);
-        notify("success", `Verified as @${data.result.user.login}`);
-        await verifyAndShowDashboard();
+        if (user.login.toLowerCase() !== "sbyuxd") {
+          throw new Error(`Akun @${user.login} bukan terdaftar sebagai Owner API.`);
+        }
+
+        state.user = user;
+        localStorage.setItem("sbyuxd_gh_token", state.token);
+        localStorage.setItem("sbyuxd_gh_user", state.username);
+
+        notify("success", `Welcome Owner @${user.login}`);
+        showDashboard();
       } catch (err) {
-        notify("error", err.message);
+        state.token = null;
+        state.username = null;
+        showAuthError(err.message);
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="shield-check" class="w-4 h-4"></i><span>Verify via GitHub Platform</span>';
+        dom.connectBtn.disabled = false;
+        dom.connectBtn.innerHTML = '<span>Muat Repositori</span><i data-lucide="arrow-right" class="w-4 h-4"></i>';
         lucide.createIcons();
       }
     }
 
-    async function verifyAndShowDashboard() {
-      try {
-        const res = await fetch("/api/auth/me", {
-          headers: { "Authorization": `Bearer ${currentToken}` }
-        });
+    function showAuthError(msg) {
+      dom.authErrorText.textContent = msg;
+      dom.authError.classList.remove("hidden");
+    }
 
-        const data = await res.json();
-        if (!res.ok || !data.status) {
-          throw new Error("Invalid Session");
-        }
+    function handleDisconnect() {
+      state.token = null;
+      state.username = null;
+      state.user = null;
+      localStorage.removeItem("sbyuxd_gh_token");
+      localStorage.removeItem("sbyuxd_gh_user");
 
-        document.getElementById("login-view").classList.add("hidden");
-        document.getElementById("dashboard-view").classList.remove("hidden");
-        document.getElementById("btn-logout").classList.remove("hidden");
+      dom.dashboardSection.classList.add("hidden");
+      dom.authSection.classList.remove("hidden");
+      dom.disconnectBtn.classList.add("hidden");
+      dom.usernameInput.value = "";
+      dom.tokenInput.value = "";
+      notify("info", "Koneksi terputus. Token dihapus.");
+    }
 
-        const u = data.result.user;
-        document.getElementById("dash-name").textContent = u.name || u.login;
-        document.getElementById("dash-login").textContent = `@${u.login}`;
-        document.getElementById("dash-avatar").src = u.avatar_url || "/media/ZEPH.jpg";
-        document.getElementById("dash-uptime").textContent = data.result.system.uptime;
-        document.getElementById("dash-memory").textContent = data.result.system.memory;
+    async function showDashboard() {
+      dom.authSection.classList.add("hidden");
+      dom.dashboardSection.classList.remove("hidden");
+      dom.disconnectBtn.classList.remove("hidden");
 
-        await loadOwnerEndpoints();
-      } catch {
-        handleLogout();
-      }
+      dom.userDisplayName.textContent = state.user.name || state.user.login;
+      dom.userLoginName.textContent = "@" + state.user.login;
+      dom.userAvatar.src = state.user.avatar_url || "/media/ZEPH.jpg";
+
+      await loadOwnerEndpoints();
     }
 
     async function loadOwnerEndpoints() {
@@ -376,7 +432,7 @@
       const opts = {
         method,
         headers: {
-          "Authorization": `Bearer ${currentToken}`
+          "Authorization": `Bearer ${state.token}`
         }
       };
 
@@ -407,23 +463,46 @@
       try {
         const res = await fetch("/api/admin/purge-cache", {
           method: "POST",
-          headers: { "Authorization": `Bearer ${currentToken}` }
+          headers: { "Authorization": `Bearer ${state.token}` }
         });
         const data = await res.json();
-        notify("success", data.result?.message || "Cache purged");
+        notify(res.ok ? "success" : "error", data.result?.message || data.message);
       } catch (err) {
         notify("error", err.message);
       }
     }
 
-    function handleLogout() {
-      localStorage.removeItem("sbyuxd_admin_token");
-      currentToken = null;
-      document.getElementById("dashboard-view").classList.add("hidden");
-      document.getElementById("btn-logout").classList.add("hidden");
-      document.getElementById("login-view").classList.remove("hidden");
-      notify("info", "Logged out");
-    }
+    window.addEventListener("DOMContentLoaded", async () => {
+      lucide.createIcons();
+
+      dom.toggleTokenBtn.addEventListener("click", () => {
+        const isPassword = dom.tokenInput.type === "password";
+        dom.tokenInput.type = isPassword ? "text" : "password";
+        const icon = document.getElementById("eye-icon");
+        icon.setAttribute("data-lucide", isPassword ? "eye-off" : "eye");
+        lucide.createIcons();
+      });
+
+      dom.tokenInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handleConnect();
+      });
+
+      dom.usernameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") dom.tokenInput.focus();
+      });
+
+      if (state.token && state.username) {
+        try {
+          const user = await validateToken();
+          if (user.login.toLowerCase() === state.username.toLowerCase() && user.login.toLowerCase() === "sbyuxd") {
+            state.user = user;
+            showDashboard();
+          }
+        } catch {
+          handleDisconnect();
+        }
+      }
+    });
   </script>
 </body>
 </html>
