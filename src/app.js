@@ -1,4 +1,3 @@
-
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
@@ -13,10 +12,8 @@ import {
   getCache,
   setCache,
   purgeAllCache,
-  OWNER_GITHUB_ACCOUNTS,
-  verifyGitHubToken,
-  createSessionToken,
-  verifySessionToken
+  OWNER_USERNAME,
+  validateGitHubOwner
 } from "./function.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -44,68 +41,12 @@ app.use(async (req, res, next) => {
   next();
 });
 
-app.post("/api/auth/github", async (req, res) => {
-  const { token } = req.body || {};
+app.post("/api/admin/purge-cache", async (req, res) => {
+  const authHeader = req.headers.authorization || req.headers["x-github-token"];
+  const ownerUser = await validateGitHubOwner(authHeader);
 
-  if (!token) {
-    return sendError(res, "GitHub Personal Access Token wajib diisi", 400);
-  }
-
-  const githubUser = await verifyGitHubToken(token);
-
-  if (!githubUser || !githubUser.login) {
-    return sendError(res, "Token GitHub tidak valid atau telah kedaluwarsa", 401);
-  }
-
-  const isOwner = OWNER_GITHUB_ACCOUNTS.map((u) => u.toLowerCase()).includes(
-    githubUser.login.toLowerCase()
-  );
-
-  if (!isOwner) {
-    return sendError(
-      res,
-      `Akses ditolak: Akun GitHub '@${githubUser.login}' bukan terdaftar sebagai Owner`,
-      403
-    );
-  }
-
-  const sessionToken = createSessionToken(githubUser);
-
-  return sendSuccess(res, {
-    message: "Autentikasi GitHub berhasil",
-    token: sessionToken,
-    user: {
-      login: githubUser.login,
-      name: githubUser.name || githubUser.login,
-      avatar_url: githubUser.avatar_url,
-      role: "owner"
-    }
-  });
-});
-
-app.get("/api/auth/me", (req, res) => {
-  const authHeader = req.headers.authorization || req.headers["x-session-token"];
-  const user = verifySessionToken(authHeader);
-
-  if (!user) {
-    return sendError(res, "Sesi tidak valid atau telah kedaluwarsa", 401);
-  }
-
-  return sendSuccess(res, {
-    user,
-    system: {
-      uptime: `${Math.floor(process.uptime())}s`,
-      memory: `${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`
-    }
-  });
-});
-
-app.post("/api/admin/purge-cache", (req, res) => {
-  const authHeader = req.headers.authorization || req.headers["x-session-token"];
-  const user = verifySessionToken(authHeader);
-
-  if (!user || user.role !== "owner") {
-    return sendError(res, "Akses ditolak: Hanya Developer/Owner yang diizinkan", 403);
+  if (!ownerUser) {
+    return sendError(res, `Akses ditolak: Hanya @${OWNER_USERNAME} yang diizinkan`, 403);
   }
 
   const purgedCount = purgeAllCache();
@@ -164,13 +105,13 @@ app.all("/:category/:plugin(*)", async (req, res) => {
     return sendError(res, `Method ${req.method} not allowed`, 405);
   }
 
-  let sessionUser = null;
+  let ownerUser = null;
   if (target.owner) {
-    const authHeader = req.headers.authorization || req.headers["x-session-token"] || req.query.token;
-    sessionUser = verifySessionToken(authHeader);
+    const authHeader = req.headers.authorization || req.headers["x-github-token"] || req.query.token;
+    ownerUser = await validateGitHubOwner(authHeader);
 
-    if (!sessionUser || sessionUser.role !== "owner") {
-      return sendError(res, "Akses ditolak: Endpoint ini khusus Developer / Owner! Silakan login di /admin.html", 403);
+    if (!ownerUser) {
+      return sendError(res, `Akses ditolak: Endpoint ini khusus Owner (@${OWNER_USERNAME})`, 403);
     }
   }
 
@@ -194,7 +135,7 @@ app.all("/:category/:plugin(*)", async (req, res) => {
 
     const executionPromise = target.execute(req, res, {
       input,
-      user: sessionUser,
+      user: ownerUser,
       query: req.query || {},
       body: req.body || {},
       params: req.params || {}
