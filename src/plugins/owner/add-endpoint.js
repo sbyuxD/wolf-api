@@ -75,4 +75,4 @@ export default {
       created_at: new Date().toISOString()
     };
   }
-}; to
+};
