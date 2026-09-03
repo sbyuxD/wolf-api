@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — sbyuxD</title>
+  
+  <link rel="icon" type="image/jpeg" href="/media/ZEPH.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500,700,900&display=swap" rel="stylesheet" />
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"DM Serif Display"', 'serif'],
+            sans: ['"Satoshi"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              accent: '#ea580c',
+              accentHover: '#c2410c',
+              dark: '#0d0c0b',
+              surface: '#141311',
+              card: '#1a1816',
+              border: '#292622',
+              muted: '#8e867c',
+              text: '#f4ede4',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { outline: none; }
+    .swal2-popup.custom-swal-center {
+      background: #1a1816 !important;
+      border: 1px solid #3d3934 !important;
+      border-radius: 1rem !important;
+      padding: 1.5rem !important;
+    }
+    .swal2-title {
+      font-size: 0.95rem !important;
+      font-family: "Satoshi", sans-serif !important;
+      color: #f4ede4 !important;
+    }
+    .json-key { color: #93c5fd; font-weight: 600; }
+    .json-string { color: #fdba74; }
+    .json-number { color: #cbd5e1; }
+    .json-boolean { color: #f472b6; font-weight: 700; }
+    .json-null { color: #a8a29e; font-style: italic; }
+  </style>
+</head>
+<body class="bg-brand-dark text-brand-text min-h-screen flex flex-col font-sans antialiased selection:bg-brand-accent selection:text-white">
+
+  <nav class="border-b border-brand-border bg-brand-surface/90 backdrop-blur-md sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <img src="/media/ZEPH.jpg" alt="Logo" class="w-8 h-8 rounded-md object-cover border border-brand-border" />
+        <span class="font-bold text-base text-brand-text">
+          sbyuxD <span class="text-xs font-mono text-brand-accent">/ Owner Gate</span>
+        </span>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <a href="/" class="px-3 py-1.5 rounded-md border border-brand-border text-xs font-semibold text-brand-muted hover:text-brand-text">
+          Public UI
+        </a>
+        <button id="disconnectBtn" onclick="handleDisconnect()" class="hidden px-3.5 py-1.5 rounded-md bg-brand-border hover:bg-rose-900/40 hover:text-rose-400 hover:border-rose-800 text-xs font-bold text-brand-text transition-colors border border-transparent">
+          Disconnect
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-1 flex items-center justify-center p-6">
+    <div id="authSection" class="w-full max-w-md bg-brand-card border border-brand-border rounded-2xl p-8 shadow-2xl">
+      <div class="text-center mb-8">
+        <div class="w-12 h-12 rounded-xl bg-brand-accent/10 border border-brand-accent/30 text-brand-accent mx-auto flex items-center justify-center mb-3">
+          <i data-lucide="github" class="w-6 h-6"></i>
+        </div>
+        <h1 class="font-serif text-3xl text-brand-text">GitHub Owner Login</h1>
+        <p class="text-xs text-brand-muted mt-1 font-medium">Autentikasi langsung menggunakan akun GitHub kamu</p>
+      </div>
+
+      <div id="authError" class="hidden mb-4 p-3 rounded-lg bg-rose-950/40 border border-rose-800 text-rose-300 text-xs font-mono">
+        <span id="authErrorText">-</span>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-brand-muted mb-1.5 font-mono">NAMA PENGGUNA (GITHUB USERNAME)</label>
+          <input type="text" id="usernameInput" placeholder="sbyuxD" class="w-full px-3.5 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-brand-text text-xs font-mono focus:border-brand-accent" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-brand-muted mb-1.5 font-mono">PERSONAL ACCESS TOKEN</label>
+          <div class="relative">
+            <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" class="w-full pl-3.5 pr-10 py-2.5 bg-brand-surface border border-brand-border rounded-lg text-brand-text text-xs font-mono focus:border-brand-accent" />
+            <button type="button" id="toggleTokenBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-text">
+              <i data-lucide="eye" id="eye-icon" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" id="connectBtn" onclick="handleConnect()" class="w-full py-3 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-bold flex items-center justify-center gap-2 transition-all mt-2">
+          <span>Menghubungkan...</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="dashboardSection" class="hidden w-full max-w-5xl space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-brand-card border border-brand-border p-6 rounded-2xl">
+        <div class="flex items-center gap-4">
+          <img id="userAvatar" src="" alt="Avatar" class="w-14 h-14 rounded-full border-2 border-brand-accent object-cover" />
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-brand-accent/10 border border-brand-accent/30 text-[10px] font-mono text-brand-accent font-bold mb-1">
+              <i data-lucide="crown" class="w-3 h-3"></i>
+              <span>AUTHENTICATED OWNER</span>
+            </div>
+            <h2 id="userDisplayName" class="font-serif text-2xl sm:text-3xl text-brand-text">-</h2>
+            <div id="userLoginName" class="text-xs font-mono text-brand-muted">-</div>
+          </div>
+        </div>
+
+        <button onclick="handlePurgeCache()" class="px-4 py-2.5 rounded-lg bg-brand-surface hover:bg-brand-accent hover:text-white border border-brand-border text-xs font-mono text-brand-text font-bold flex items-center gap-2 transition-all">
+          <i data-lucide="trash-2" class="w-4 h-4 text-brand-accent"></i>
+          <span>Purge Memory Cache</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="bg-brand-card border border-brand-border p-6 rounded-xl">
+          <div class="text-xs font-mono text-brand-muted mb-1">GitHub Role</div>
+          <div class="text-2xl font-bold font-mono text-brand-accent">Owner / Verified</div>
+        </div>
+        <div class="bg-brand-card border border-brand-border p-6 rounded-xl">
+          <div class="text-xs font-mono text-brand-muted mb-1">API Engine Status</div>
+          <div class="text-2xl font-bold font-mono text-emerald-400">Live Running</div>
+        </div>
+        <div class="bg-brand-card border border-brand-border p-6 rounded-xl">
+          <div class="text-xs font-mono text-brand-muted mb-1">Session Token</div>
+          <div class="text-2xl font-bold font-mono text-brand-text">Active (Direct)</div>
+        </div>
+      </div>
+
+      <div class="bg-brand-card border border-brand-border rounded-2xl p-6 space-y-4">
+        <h3 class="font-serif text-2xl text-brand-text">Owner-Only Endpoints</h3>
+        <div id="owner-endpoint-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
+
+      <div id="tester-box" class="hidden bg-brand-card border border-brand-border rounded-2xl p-6 space-y-4">
+        <div class="flex items-center justify-between border-b border-brand-border pb-3">
+          <h4 id="tester-title" class="font-bold text-sm text-brand-text font-mono">Endpoint Test</h4>
+          <span class="px-2 py-0.5 rounded bg-brand-accent/20 text-brand-accent font-mono text-[10px] font-bold">GITHUB TOKEN INJECTED</span>
+        </div>
+
+        <div id="tester-inputs" class="space-y-3"></div>
+
+        <button onclick="runOwnerEndpoint()" id="btn-run-owner" class="px-5 py-2.5 rounded-lg bg-brand-accent hover:bg-brand-accentHover text-white text-xs font-bold">
+          Execute with Owner Privileges
+        </button>
+
+        <div id="tester-output-wrapper" class="hidden space-y-2 mt-4">
+          <div class="text-xs font-mono text-brand-muted">Response Result</div>
+          <pre id="tester-output" class="bg-[#0c0b0a] border border-brand-border p-4 rounded-xl font-mono text-xs overflow-x-auto text-[#f4ede4]"></pre>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE = "https://api.github.com";
+
+    const state = {
+      token: localStorage.getItem("sbyuxd_gh_token") || null,
+      username: localStorage.getItem("sbyuxd_gh_user") || null,
+      user: null
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    const dom = {
+      authSection: $("authSection"),
+      dashboardSection: $("dashboardSection"),
+      usernameInput: $("usernameInput"),
+      tokenInput: $("tokenInput"),
+      toggleTokenBtn: $("toggleTokenBtn"),
+      connectBtn: $("connectBtn"),
+      authError: $("authError"),
+      authErrorText: $("authErrorText"),
+      disconnectBtn: $("disconnectBtn"),
+      userDisplayName: $("userDisplayName"),
+      userLoginName: $("userLoginName"),
+      userAvatar: $("userAvatar")
+    };
+
+    let activeOwnerEndpoint = null;
+
+    const notify = (icon, title) => {
+      Swal.fire({
+        icon,
+        title,
+        position: 'center',
+        showConfirmButton: false,
+        timer: 1800,
+        customClass: { popup: 'custom-swal-center' },
+        iconColor: icon === 'success' ? '#5a9e6f' : '#ea580c'
+      });
+    };
+
+    const formatCodeHighlight = (data) => {
+      let json = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+          cls = /:$/.test(match) ? 'json-key' : 'json-string';
+        } else if (/true|false/.test(match)) {
+          cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+          cls = 'json-null';
+        }
+        return `<span class="${cls}">${match}</span>`;
+      });
+    };
+
+    async function apiRequest(endpoint, options = {}) {
+      const headers = {
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+      };
+      if (state.token) {
+        headers["Authorization"] = "Bearer " + state.token;
+      }
+      const resp = await fetch(API_BASE + endpoint, {
+        ...options,
+        headers: { ...headers, ...options.headers }
+      });
+
+      if (resp.status === 401) {
+        throw new Error("Token akses tidak valid atau telah kedaluwarsa.");
+      }
+      if (!resp.ok) {
+        throw new Error("API error: " + resp.status + " " + resp.statusText);
+      }
+      return resp.json();
+    }
+
+    async function validateToken() {
+      return apiRequest("/user");
+    }
+
+    async function handleConnect() {
+      const username = dom.usernameInput.value.trim();
+      const token = dom.tokenInput.value.trim();
+
+      if (!username || !token) {
+        showAuthError("Harap masukkan nama pengguna dan token.");
+        return;
+      }
+
+      state.username = username;
+      state.token = token;
+      dom.authError.classList.add("hidden");
+
+      dom.connectBtn.disabled = true;
+      dom.connectBtn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span>Menghubungkan...</span>';
+      lucide.createIcons();
+
+      try {
+        const user = await validateToken();
+        
+        if (user.login.toLowerCase() !== username.toLowerCase()) {
+          throw new Error(`Token milik akun @${user.login}, bukan @${username}`);
+        }
+
+        if (user.login.toLowerCase() !== "sbyuxd") {
+          throw new Error(`Akun @${user.login} bukan terdaftar sebagai Owner API.`);
+        }
+
+        state.user = user;
+        localStorage.setItem("sbyuxd_gh_token", state.token);
+        localStorage.setItem("sbyuxd_gh_user", state.username);
+
+        notify("success", `Welcome Owner @${user.login}`);
+        showDashboard();
+      } catch (err) {
+        state.token = null;
+        state.username = null;
+        showAuthError(err.message);
+      } finally {
+        dom.connectBtn.disabled = false;
+        dom.connectBtn.innerHTML = '<span>Muat Repositori</span><i data-lucide="arrow-right" class="w-4 h-4"></i>';
+        lucide.createIcons();
+      }
+    }
+
+    function showAuthError(msg) {
+      dom.authErrorText.textContent = msg;
+      dom.authError.classList.remove("hidden");
+    }
+
+    function handleDisconnect() {
+      state.token = null;
+      state.username = null;
+      state.user = null;
+      localStorage.removeItem("sbyuxd_gh_token");
+      localStorage.removeItem("sbyuxd_gh_user");
+
+      dom.dashboardSection.classList.add("hidden");
+      dom.authSection.classList.remove("hidden");
+      dom.disconnectBtn.classList.add("hidden");
+      dom.usernameInput.value = "";
+      dom.tokenInput.value = "";
+      notify("info", "Koneksi terputus. Token dihapus.");
+    }
+
+    async function showDashboard() {
+      dom.authSection.classList.add("hidden");
+      dom.dashboardSection.classList.remove("hidden");
+      dom.disconnectBtn.classList.remove("hidden");
+
+      dom.userDisplayName.textContent = state.user.name || state.user.login;
+      dom.userLoginName.textContent = "@" + state.user.login;
+      dom.userAvatar.src = state.user.avatar_url || "/media/ZEPH.jpg";
+
+      await loadOwnerEndpoints();
+    }
+
+    async function loadOwnerEndpoints() {
+      const res = await fetch("/api/endpoints");
+      const data = await res.json();
+      const container = document.getElementById("owner-endpoint-list");
+      container.innerHTML = "";
+
+      const all = data.result.endpoints || {};
+      let count = 0;
+
+      Object.keys(all).forEach(cat => {
+        all[cat].forEach(ep => {
+          if (!ep.owner) return;
+          count++;
+
+          const card = document.createElement("div");
+          card.className = "p-5 rounded-xl bg-brand-surface border border-brand-border flex flex-col justify-between";
+          card.innerHTML = `
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-bold text-sm text-brand-text">${ep.name}</span>
+                <span class="px-2 py-0.5 rounded bg-brand-accent/20 text-brand-accent text-[10px] font-mono font-bold">OWNER</span>
+              </div>
+              <p class="text-xs text-brand-muted mb-4 font-medium">${ep.description}</p>
+            </div>
+            <button onclick='openOwnerTester(${JSON.stringify(ep)})' class="w-full py-2 rounded bg-brand-card hover:bg-brand-accent hover:text-white border border-brand-border text-xs font-bold text-brand-text transition-colors">
+              Open Dev Runner
+            </button>
+          `;
+          container.appendChild(card);
+        });
+      });
+
+      if (count === 0) {
+        container.innerHTML = '<div class="text-xs font-mono text-brand-muted py-6 col-span-2 text-center">No owner-flagged endpoints registered. Add owner: true in plugin schema.</div>';
+      }
+    }
+
+    function openOwnerTester(ep) {
+      activeOwnerEndpoint = ep;
+      const box = document.getElementById("tester-box");
+      const title = document.getElementById("tester-title");
+      const inputs = document.getElementById("tester-inputs");
+
+      box.classList.remove("hidden");
+      title.textContent = `${ep.method[0]} ${ep.endpoint}`;
+      inputs.innerHTML = "";
+
+      const params = ep.params || {};
+      const keys = Object.keys(params);
+
+      if (keys.length === 0) {
+        inputs.innerHTML = '<div class="text-xs font-mono text-brand-muted">No inputs needed.</div>';
+      } else {
+        keys.forEach(k => {
+          const field = document.createElement("div");
+          field.innerHTML = `
+            <label class="block text-xs font-mono font-bold text-brand-muted mb-1">${k}</label>
+            <input type="text" id="owner-param-${k}" placeholder="Enter ${k}..." class="w-full px-3 py-2 bg-brand-surface border border-brand-border rounded text-xs font-mono text-brand-text" />
+          `;
+          inputs.appendChild(field);
+        });
+      }
+
+      box.scrollIntoView({ behavior: "smooth" });
+    }
+
+    async function runOwnerEndpoint() {
+      if (!activeOwnerEndpoint) return;
+
+      const btn = document.getElementById("btn-run-owner");
+      const outputWrapper = document.getElementById("tester-output-wrapper");
+      const output = document.getElementById("tester-output");
+
+      btn.disabled = true;
+      btn.textContent = "Executing...";
+
+      const params = activeOwnerEndpoint.params || {};
+      const queryParams = new URLSearchParams();
+      const body = {};
+
+      Object.keys(params).forEach(k => {
+        const val = document.getElementById(`owner-param-${k}`)?.value?.trim();
+        if (val) {
+          queryParams.append(k, val);
+          body[k] = val;
+        }
+      });
+
+      const method = activeOwnerEndpoint.method[0] || "GET";
+      let url = activeOwnerEndpoint.endpoint;
+
+      const opts = {
+        method,
+        headers: {
+          "Authorization": `Bearer ${state.token}`
+        }
+      };
+
+      if (method === "GET") {
+        const qs = queryParams.toString();
+        if (qs) url += `?${qs}`;
+      } else {
+        opts.headers["Content-Type"] = "application/json";
+        opts.body = JSON.stringify(body);
+      }
+
+      try {
+        const res = await fetch(url, opts);
+        const data = await res.json();
+        outputWrapper.classList.remove("hidden");
+        output.innerHTML = formatCodeHighlight(data);
+        notify(res.ok ? "success" : "error", res.ok ? "Executed" : "Failed");
+      } catch (err) {
+        outputWrapper.classList.remove("hidden");
+        output.innerHTML = formatCodeHighlight({ status: false, message: err.message });
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Execute with Owner Privileges";
+      }
+    }
+
+    async function handlePurgeCache() {
+      try {
+        const res = await fetch("/api/admin/purge-cache", {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${state.token}` }
+        });
+        const data = await res.json();
+        notify(res.ok ? "success" : "error", data.result?.message || data.message);
+      } catch (err) {
+        notify("error", err.message);
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      lucide.createIcons();
+
+      dom.toggleTokenBtn.addEventListener("click", () => {
+        const isPassword = dom.tokenInput.type === "password";
+        dom.tokenInput.type = isPassword ? "text" : "password";
+        const icon = document.getElementById("eye-icon");
+        icon.setAttribute("data-lucide", isPassword ? "eye-off" : "eye");
+        lucide.createIcons();
+      });
+
+      dom.tokenInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") handleConnect();
+      });
+
+      dom.usernameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") dom.tokenInput.focus();
+      });
+
+      if (state.token && state.username) {
+        try {
+          const user = await validateToken();
+          if (user.login.toLowerCase() === state.username.toLowerCase() && user.login.toLowerCase() === "sbyuxd") {
+            state.user = user;
+            showDashboard();
+          }
+        } catch {
+          handleDisconnect();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
