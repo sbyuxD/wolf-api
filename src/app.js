@@ -10,7 +10,11 @@ import {
   sendError,
   extractAndValidateInput,
   getCache,
-  setCache
+  setCache,
+  purgeAllCache,
+  ADMIN_CONFIG,
+  createSessionToken,
+  verifySessionToken
 } from "./function.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -31,6 +35,60 @@ app.use(async (req, res, next) => {
   next();
 });
 
+app.post("/api/auth/login", (req, res) => {
+  const { username, password } = req.body || {};
+
+  if (!username || !password) {
+    return sendError(res, "Username dan password wajib diisi", 400);
+  }
+
+  if (username !== ADMIN_CONFIG.username || password !== ADMIN_CONFIG.password) {
+    return sendError(res, "Kredensial login admin tidak valid", 401);
+  }
+
+  const token = createSessionToken(username);
+  return sendSuccess(res, {
+    message: "Login admin berhasil",
+    token,
+    user: {
+      username,
+      role: "owner"
+    }
+  });
+});
+
+app.get("/api/auth/me", (req, res) => {
+  const authHeader = req.headers.authorization || req.headers["x-session-token"];
+  const user = verifySessionToken(authHeader);
+
+  if (!user) {
+    return sendError(res, "Sesi tidak valid atau telah kedaluwarsa", 401);
+  }
+
+  return sendSuccess(res, {
+    user,
+    system: {
+      uptime: `${Math.floor(process.uptime())}s`,
+      memory: `${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`
+    }
+  });
+});
+
+app.post("/api/admin/purge-cache", (req, res) => {
+  const authHeader = req.headers.authorization || req.headers["x-session-token"];
+  const user = verifySessionToken(authHeader);
+
+  if (!user || user.role !== "owner") {
+    return sendError(res, "Akses ditolak: Hanya Developer/Owner yang diizinkan", 403);
+  }
+
+  const purgedCount = purgeAllCache();
+  return sendSuccess(res, {
+    message: "Semua memory cache berhasil dibersihkan",
+    purged_items: purgedCount
+  });
+});
+
 app.get("/api/endpoints", async (req, res) => {
   await loadAllPlugins();
 
@@ -49,6 +107,7 @@ app.get("/api/endpoints", async (req, res) => {
       endpoint: routePath,
       method: data.method,
       description: data.description,
+      owner: data.owner,
       params: data.params
     });
   }
@@ -75,6 +134,16 @@ app.all("/:category/:plugin(*)", async (req, res) => {
     return sendError(res, `Method ${req.method} not allowed`, 405);
   }
 
+  let sessionUser = null;
+  if (target.owner) {
+    const authHeader = req.headers.authorization || req.headers["x-session-token"] || req.query.token;
+    sessionUser = verifySessionToken(authHeader);
+
+    if (!sessionUser || sessionUser.role !== "owner") {
+      return sendError(res, "Akses ditolak: Endpoint ini khusus Developer / Owner! Silakan login di /admin.html", 403);
+    }
+  }
+
   const { input, error } = extractAndValidateInput(target.params, req);
   if (error) {
     return sendError(res, error, 400);
@@ -95,6 +164,7 @@ app.all("/:category/:plugin(*)", async (req, res) => {
 
     const executionPromise = target.execute(req, res, {
       input,
+      user: sessionUser,
       query: req.query || {},
       body: req.body || {},
       params: req.params || {}
