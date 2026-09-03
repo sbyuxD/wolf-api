@@ -23,13 +23,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.resolve(__dirname, "../public")));
-app.use("/media", express.static(path.resolve(__dirname, "media")));
+
+try {
+  app.use(express.static(path.resolve(__dirname, "../public")));
+  app.use("/media", express.static(path.resolve(__dirname, "media")));
+} catch {}
 
 let initialized = false;
 app.use(async (req, res, next) => {
   if (!initialized) {
-    await loadAllPlugins();
+    try {
+      await loadAllPlugins();
+    } catch (err) {
+      console.error("[Init Error]:", err.message);
+    }
     initialized = true;
   }
   next();
@@ -90,7 +97,9 @@ app.post("/api/admin/purge-cache", (req, res) => {
 });
 
 app.get("/api/endpoints", async (req, res) => {
-  await loadAllPlugins();
+  try {
+    await loadAllPlugins();
+  } catch {}
 
   const endpoints = {};
 
@@ -123,7 +132,9 @@ app.all("/:category/:plugin(*)", async (req, res) => {
   let target = plugins.get(routePath);
 
   if (!target) {
-    target = await resolveSingleRouteOnDemand(req.params.category, req.params.plugin);
+    try {
+      target = await resolveSingleRouteOnDemand(req.params.category, req.params.plugin);
+    } catch {}
   }
 
   if (!target) {
@@ -140,7 +151,7 @@ app.all("/:category/:plugin(*)", async (req, res) => {
     sessionUser = verifySessionToken(authHeader);
 
     if (!sessionUser || sessionUser.role !== "owner") {
-      return sendError(res, "Akses ditolak: Endpoint ini khusus Developer / Owner! Silakan login di /admin.html", 403);
+      return sendError(res, "Akses ditolak: Endpoint ini khusus Developer / Owner!", 403);
     }
   }
 
