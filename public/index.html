@@ -132,36 +132,52 @@
       opacity: 1;
       transform: perspective(1000px) translate3d(0, 0, 0) scale(1);
     }
-    .cube-scene {
+    .gyro-scene {
       width: 64px;
       height: 64px;
       perspective: 400px;
     }
-    .cube {
+    .gyro-spinner {
       width: 100%;
       height: 100%;
       position: relative;
       transform-style: preserve-3d;
-      animation: rotateCube 2.4s infinite cubic-bezier(0.4, 0, 0.2, 1);
+      animation: rotateGyro 3s infinite linear;
     }
-    .cube-face {
+    .gyro-ring {
       position: absolute;
-      width: 64px;
-      height: 64px;
+      inset: 0;
+      border-radius: 9999px;
       border: 1.5px solid #ea580c;
-      background: rgba(234, 88, 12, 0.08);
-      box-shadow: inset 0 0 12px rgba(234, 88, 12, 0.15);
+      box-shadow: inset 0 0 8px rgba(234, 88, 12, 0.2), 0 0 12px rgba(234, 88, 12, 0.15);
     }
-    .cube-front  { transform: rotateY(0deg) translateZ(32px); }
-    .cube-back   { transform: rotateY(180deg) translateZ(32px); }
-    .cube-right  { transform: rotateY(90deg) translateZ(32px); }
-    .cube-left   { transform: rotateY(-90deg) translateZ(32px); }
-    .cube-top    { transform: rotateX(90deg) translateZ(32px); }
-    .cube-bottom { transform: rotateX(-90deg) translateZ(32px); }
-    @keyframes rotateCube {
-      0% { transform: rotateX(-25deg) rotateY(0deg); }
-      50% { transform: rotateX(-25deg) rotateY(180deg); }
-      100% { transform: rotateX(-25deg) rotateY(360deg); }
+    .ring-x {
+      transform: rotateX(70deg) rotateY(0deg);
+    }
+    .ring-y {
+      transform: rotateX(70deg) rotateY(60deg);
+    }
+    .ring-z {
+      transform: rotateX(70deg) rotateY(120deg);
+    }
+    .gyro-core {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #ea580c;
+      border-radius: 9999px;
+      box-shadow: 0 0 14px #ea580c;
+    }
+    @keyframes rotateGyro {
+      0% {
+        transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+      }
+      100% {
+        transform: rotateX(360deg) rotateY(180deg) rotateZ(360deg);
+      }
     }
     .console-vps {
       transform: perspective(1000px) rotateX(3deg);
@@ -221,14 +237,12 @@
 
   <div id="preloader" class="fixed inset-0 z-50 bg-brand-dark flex flex-col items-center justify-center transition-opacity duration-500 ease-out">
     <div class="flex flex-col items-center gap-6">
-      <div class="cube-scene">
-        <div class="cube">
-          <div class="cube-face cube-front"></div>
-          <div class="cube-face cube-back"></div>
-          <div class="cube-face cube-right"></div>
-          <div class="cube-face cube-left"></div>
-          <div class="cube-face cube-top"></div>
-          <div class="cube-face cube-bottom"></div>
+      <div class="gyro-scene">
+        <div class="gyro-spinner">
+          <div class="gyro-ring ring-x"></div>
+          <div class="gyro-ring ring-y"></div>
+          <div class="gyro-ring ring-z"></div>
+          <div class="gyro-core"></div>
         </div>
       </div>
       <div class="flex items-center gap-2 font-mono text-xs text-brand-muted tracking-widest uppercase">
