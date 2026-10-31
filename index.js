@@ -1,11 +1,11 @@
 import app from "./src/app.js";
-import { watchPlugins, loadAllPlugins } from "./src/function.js";
+import { ensurePluginsLoaded, watchPlugins } from "./src/function.js";
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
-await loadAllPlugins();
+await ensurePluginsLoaded();
 watchPlugins();
 
 app.listen(PORT, () => {
-  console.log(`Server ready at http://localhost:${PORT}`);
+  console.log(`WolfApi running on http://localhost:${PORT}`);
 });
