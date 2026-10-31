@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WolfApi — sbyuxD</title>
-  
+
   <meta name="description" content="simple lightweight api base made by sbyuxD" />
   <meta property="og:title" content="WolfApi — sbyuxD" />
   <meta property="og:description" content="simple lightweight api base made by sbyuxD" />
@@ -12,17 +12,16 @@
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="/media/ZEPH.jpg" />
-  
+
   <link rel="icon" type="image/jpeg" href="/media/ZEPH.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@500,700,900&display=swap" rel="stylesheet" />
-  
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
+
   <script>
     tailwind.config = {
       theme: {
@@ -35,348 +34,551 @@
           colors: {
             cream: {
               50: '#FDFCF9',
-              100: '#F8F5EE',
-              200: '#F0EAE1',
-              300: '#E6DCCF',
-              border: '#E3DACB',
+              100: '#F7F4EC',
+              200: '#EFE9DE',
+              300: '#E5DDD0',
+              border: '#E2D9C8',
               card: '#FFFFFF',
-              title: '#24201C',
-              body: '#61584D',
-              muted: '#8A7F71',
+              title: '#1F1B17',
+              body: '#5C5349',
+              muted: '#8C8173',
             },
             accent: {
               clay: '#C05C2B',
-              clayHover: '#A44B1E',
+              clayHover: '#A3491D',
               clayLight: '#E88B5F',
-              stone: '#161311',
+              stone: '#151210',
             }
           }
         }
       }
     }
   </script>
+
   <style>
     * {
       -webkit-tap-highlight-color: transparent;
       outline: none;
     }
+
+    body {
+      background-color: #F7F4EC;
+      color: #1F1B17;
+      overflow-x: hidden;
+    }
+
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #F8F5EE;
+      background: #F7F4EC;
     }
     ::-webkit-scrollbar-thumb {
-      background: #E3DACB;
+      background: #D8CEBE;
       border-radius: 999px;
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #C05C2B;
     }
+
     .dynamic-island {
-      background: #161311;
-      border-radius: 9999px;
-      box-shadow: 0 20px 45px -10px rgba(22, 19, 17, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
-      transition: width 400ms cubic-bezier(0.16, 1, 0.3, 1), height 400ms cubic-bezier(0.16, 1, 0.3, 1), border-radius 400ms cubic-bezier(0.16, 1, 0.3, 1), transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms ease;
+      width: 172px;
+      background: #151210;
+      border-radius: 24px;
+      box-shadow: 0 18px 40px -10px rgba(21, 18, 16, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.09);
+      will-change: width, transform;
+      transform: translateZ(0);
+      transition:
+        width 260ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 240ms ease,
+        transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .dynamic-island:hover {
-      transform: scale(1.02);
-      box-shadow: 0 25px 55px -10px rgba(22, 19, 17, 0.65);
+
+    .dynamic-island:hover:not(.expanded) {
+      transform: translateY(-1px) scale(1.015);
+      box-shadow: 0 22px 48px -10px rgba(21, 18, 16, 0.58), 0 0 0 1px rgba(255, 255, 255, 0.14);
     }
-    .dynamic-island:active {
-      transform: scale(0.98);
-    }
+
     .dynamic-island.expanded {
+      width: min(320px, calc(100vw - 2.5rem));
+      box-shadow: 0 28px 60px -12px rgba(21, 18, 16, 0.72), 0 0 0 1px rgba(255, 255, 255, 0.14);
+    }
+
+    .island-drawer {
+      display: grid;
+      grid-template-rows: 0fr;
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        grid-template-rows 240ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 180ms ease;
+    }
+
+    .dynamic-island.expanded .island-drawer {
+      grid-template-rows: 1fr;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .island-chevron {
+      transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .dynamic-island.expanded .island-chevron {
+      transform: rotate(180deg);
+    }
+
+    .surface-card {
+      background: #FFFFFF;
+      border: 1px solid #E2D9C8;
       border-radius: 1.75rem;
-      box-shadow: 0 30px 65px -10px rgba(22, 19, 17, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.14);
+      box-shadow: 0 10px 30px -15px rgba(31, 27, 23, 0.05);
+      transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .squircle {
-      border-radius: 1.5rem;
-      transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
-    }
+
     .folder-wrapper {
-      border-radius: 1.5rem;
-      transition: border-color 300ms ease, box-shadow 300ms ease, transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+      background: #FFFFFF;
+      border: 1px solid #E2D9C8;
+      border-radius: 1.75rem;
+      box-shadow: 0 8px 24px -14px rgba(31, 27, 23, 0.05);
+      transition: border-color 240ms ease, box-shadow 240ms ease;
     }
+
     .folder-wrapper:hover {
-      box-shadow: 0 12px 30px -8px rgba(97, 88, 77, 0.08);
+      border-color: #D2C5B0;
+      box-shadow: 0 14px 34px -14px rgba(31, 27, 23, 0.08);
     }
+
     .folder-content {
       display: grid;
       grid-template-rows: 0fr;
-      transition: grid-template-rows 400ms cubic-bezier(0.16, 1, 0.3, 1), padding 350ms ease;
+      transition: grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1);
     }
+
     .folder-content.open {
       grid-template-rows: 1fr;
     }
-    .card-item {
-      border-radius: 1.25rem;
-      transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms ease, border-color 300ms ease;
-      animation: cardAppear 350ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+
+    .endpoint-card {
+      background: #FDFCF9;
+      border: 1px solid #E5DDD0;
+      border-radius: 1.35rem;
+      transition:
+        transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 220ms ease,
+        border-color 220ms ease,
+        background-color 220ms ease;
     }
-    .card-item:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 14px 28px -8px rgba(97, 88, 77, 0.12), 0 0 0 1px rgba(192, 92, 43, 0.35);
+
+    .endpoint-card:hover {
+      background: #FFFFFF;
+      transform: translateY(-2px);
+      border-color: rgba(192, 92, 43, 0.45);
+      box-shadow: 0 14px 28px -12px rgba(31, 27, 23, 0.1);
     }
-    @keyframes cardAppear {
-      from {
-        opacity: 0;
-        transform: translateY(14px) scale(0.98);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
+
     .modal-sheet {
       transform: translateY(100%);
-      transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms ease;
+      transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
     }
+
     .modal-sheet.active {
       transform: translateY(0);
     }
-    .view-transition {
-      transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+
+    .view-section {
+      transition: opacity 220ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .view-enter {
+
+    .view-visible {
       opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: auto;
+      transform: translateY(0);
     }
-    .view-leave {
+
+    .view-hidden {
       opacity: 0;
-      transform: translateY(8px) scale(0.98);
+      transform: translateY(10px);
       pointer-events: none;
     }
-    .touch-ripple {
-      position: fixed;
-      border-radius: 9999px;
-      pointer-events: none;
-      z-index: 9999;
-      transform: scale(0.2);
-      opacity: 0.85;
-      background: radial-gradient(circle, rgba(192, 92, 43, 0.35) 0%, rgba(227, 218, 203, 0.25) 50%, transparent 75%);
-      transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1), opacity 450ms ease;
-    }
+
     .terminal-cursor {
       display: inline-block;
       width: 7px;
       height: 14px;
       background-color: #C05C2B;
-      vertical-align: sub;
-      animation: blinkCursor 700ms infinite steps(1);
+      vertical-align: middle;
+      margin-left: 3px;
+      animation: blinkCursor 800ms infinite steps(1);
     }
+
     @keyframes blinkCursor {
       0%, 100% { opacity: 1; }
       50% { opacity: 0; }
     }
+
     .swal2-popup.custom-swal-center {
       background: #FFFFFF !important;
-      border: 1px solid #E3DACB !important;
-      border-radius: 1.25rem !important;
+      border: 1px solid #E2D9C8 !important;
+      border-radius: 1.5rem !important;
       padding: 1.5rem !important;
-      box-shadow: 0 25px 50px -12px rgba(36, 32, 28, 0.15) !important;
+      box-shadow: 0 25px 50px -12px rgba(31, 27, 23, 0.18) !important;
     }
+
     .swal2-title {
       font-size: 0.95rem !important;
       font-weight: 700 !important;
       font-family: "Satoshi", sans-serif !important;
-      color: #24201C !important;
+      color: #1F1B17 !important;
     }
-    .json-key { color: #1D4ED8; font-weight: 600; }
-    .json-string { color: #C05C2B; }
+
+    .json-key { color: #1E40AF; font-weight: 600; }
+    .json-string { color: #B85020; }
     .json-number { color: #047857; }
     .json-boolean { color: #B45309; font-weight: 700; }
-    .json-null { color: #8A7F71; font-style: italic; }
+    .json-null { color: #8C8173; font-style: italic; }
   </style>
 </head>
-<body class="bg-cream-100 text-cream-title min-h-screen flex flex-col font-sans antialiased selection:bg-accent-clay selection:text-white relative">
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-accent-clay selection:text-white">
 
-  <div class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex justify-center pointer-events-none">
-    <div id="island-container" class="pointer-events-auto dynamic-island overflow-hidden flex flex-col items-center justify-center cursor-pointer">
-      <div id="island-pill" onclick="toggleDynamicIsland()" class="h-11 px-5 flex items-center justify-between gap-3 w-full text-cream-50">
-        <div class="flex items-center gap-3">
-          <img src="/media/ZEPH.jpg" alt="Logo" class="w-7 h-7 rounded-full object-cover border border-white/20 shrink-0" />
-          <span class="font-bold text-xs tracking-tight text-white font-mono">WolfApi</span>
+  <header class="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex justify-center">
+    <div id="island-container" class="dynamic-island overflow-hidden select-none">
+      <button
+        type="button"
+        id="island-trigger"
+        class="h-12 px-4 flex items-center justify-between gap-3 w-full text-cream-50 cursor-pointer"
+        aria-expanded="false"
+      >
+        <div class="flex items-center gap-2.5 min-w-0">
+          <img src="/media/ZEPH.jpg" alt="WolfApi" class="w-7 h-7 rounded-full object-cover border border-white/20 shrink-0" />
+          <span class="font-bold text-xs tracking-wide text-white font-mono truncate">WolfApi</span>
         </div>
-        <div class="flex items-center gap-1.5 text-white/40">
-          <i data-lucide="chevron-down" id="island-chevron" class="w-3.5 h-3.5 transition-transform duration-300"></i>
+        <div class="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-white/60 shrink-0">
+          <svg class="w-3.5 h-3.5 island-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
         </div>
-      </div>
+      </button>
 
-      <div id="island-menu" class="hidden w-full px-4 pb-4 pt-1 flex-col gap-1.5 transition-all duration-300">
-        <div class="h-px bg-white/10 w-full my-1"></div>
-        <button onclick="handleIslandNav('home')" class="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
-          <svg class="w-4 h-4 text-accent-clayLight shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <span>HOME</span>
-        </button>
-        <a href="https://wa.me/628895307489" target="_blank" onclick="closeIsland()" class="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
-          <svg class="w-4 h-4 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.19.53-.98 1.03-1.6 1.15-.41.08-.95.14-2.77-.62-2.33-.97-3.83-3.34-3.95-3.5-.11-.15-.96-1.28-.96-2.44 0-1.16.61-1.73.83-1.96.22-.24.48-.3.64-.3.16 0 .32 0 .46.01.15.01.35-.06.55.42.21.49.7 1.73.76 1.86.06.13.1.28.02.44-.08.16-.12.26-.24.4-.12.14-.25.31-.36.42-.12.12-.25.25-.11.49.14.24.63 1.04 1.35 1.68.93.83 1.71 1.09 1.95 1.21.24.12.38.1.52-.06.14-.16.61-.71.77-.96.16-.24.33-.2.55-.12.22.08 1.4.66 1.64.78.24.12.4.18.46.28.06.11.06.63-.13 1.16"/></svg>
-          <span>Contact</span>
-        </a>
-        <a href="https://github.com/sbyuxD/wolf-api" target="_blank" onclick="closeIsland()" class="w-full px-3.5 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-white/10 flex items-center gap-3 transition-colors">
-          <svg class="w-4 h-4 text-white shrink-0" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
-          <span>Source code</span>
-        </a>
+      <div class="island-drawer w-full">
+        <div class="overflow-hidden">
+          <div class="px-3 pb-3 pt-1 flex flex-col gap-1">
+            <div class="h-px bg-white/10 w-full mb-1.5"></div>
+
+            <button
+              type="button"
+              onclick="handleIslandNav('home')"
+              class="w-full px-3.5 py-2.5 rounded-2xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 flex items-center justify-between transition-colors"
+            >
+              <span class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-accent-clayLight shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                  <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                <span>Beranda</span>
+              </span>
+              <span class="text-[10px] font-mono text-white/40">HOME</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="handleIslandNav('docs')"
+              class="w-full px-3.5 py-2.5 rounded-2xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 flex items-center justify-between transition-colors"
+            >
+              <span class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+                </svg>
+                <span>Katalog API</span>
+              </span>
+              <span class="text-[10px] font-mono text-white/40">DOCS</span>
+            </button>
+
+            <a
+              href="https://wa.me/628895307489"
+              target="_blank"
+              rel="noopener noreferrer"
+              onclick="closeIsland()"
+              class="w-full px-3.5 py-2.5 rounded-2xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 flex items-center justify-between transition-colors"
+            >
+              <span class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.24-8.24 8.24-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.196 8.196 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24m4.52 11.66c-.19.53-.98 1.03-1.6 1.15-.41.08-.95.14-2.77-.62-2.33-.97-3.83-3.34-3.95-3.5-.11-.15-.96-1.28-.96-2.44 0-1.16.61-1.73.83-1.96.22-.24.48-.3.64-.3.16 0 .32 0 .46.01.15.01.35-.06.55.42.21.49.7 1.73.76 1.86.06.13.1.28.02.44-.08.16-.12.26-.24.4-.12.14-.25.31-.36.42-.12.12-.25.25-.11.49.14.24.63 1.04 1.35 1.68.93.83 1.71 1.09 1.95 1.21.24.12.38.1.52-.06.14-.16.61-.71.77-.96.16-.24.33-.2.55-.12.22.08 1.4.66 1.64.78.24.12.4.18.46.28.06.11.06.63-.13 1.16"/>
+                </svg>
+                <span>Hubungi Author</span>
+              </span>
+              <span class="text-[10px] font-mono text-white/40">CHAT</span>
+            </a>
+
+            <a
+              href="https://github.com/sbyuxD/wolf-api"
+              target="_blank"
+              rel="noopener noreferrer"
+              onclick="closeIsland()"
+              class="w-full px-3.5 py-2.5 rounded-2xl text-left text-xs font-bold text-white/90 hover:text-white hover:bg-white/10 flex items-center justify-between transition-colors"
+            >
+              <span class="flex items-center gap-3">
+                <svg class="w-4 h-4 text-white shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                </svg>
+                <span>Source Code</span>
+              </span>
+              <span class="text-[10px] font-mono text-white/40">GIT</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </header>
 
-  <main class="flex-1 max-w-5xl mx-auto w-full px-6 pt-28 pb-16 relative">
-    <div id="view-home" class="view-transition view-enter space-y-12">
-      <section class="text-center space-y-3 max-w-xl mx-auto pt-2">
+  <main class="flex-1 max-w-5xl mx-auto w-full px-5 sm:px-8 pt-32 pb-24">
+
+    <div id="view-home" class="view-section view-visible space-y-12 sm:space-y-14">
+
+      <section class="text-center space-y-4 max-w-2xl mx-auto pt-2">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cream-200/80 border border-cream-border text-[11px] font-mono font-semibold text-cream-body">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>Bun REST Engine • Ready</span>
+        </div>
         <h1 class="font-serif text-5xl sm:text-6xl text-cream-title tracking-tight leading-none">
           WolfApi
         </h1>
-        <p class="text-cream-body text-sm sm:text-base leading-relaxed font-medium">
-          simple lightweight api base made by sbyuxD
+        <p class="text-cream-body text-sm sm:text-base leading-relaxed font-medium max-w-md mx-auto">
+          Simple lightweight API base made by sbyuxD. Dirancang cepat, bersih, dan langsung siap diuji.
         </p>
       </section>
 
-      <section class="space-y-6">
-        <div class="rounded-3xl bg-accent-stone text-cream-300 border border-black/10 overflow-hidden shadow-2xl">
-          <div class="px-5 py-3.5 bg-[#120F0D] border-b border-white/5 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-[#EF4444] inline-block"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-[#F59E0B] inline-block"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-[#10B981] inline-block"></span>
-              <span class="ml-2 text-xs font-mono font-medium text-white/40">root@sbyuxD:~# (bash)</span>
+      <section class="space-y-8">
+        <div class="rounded-[1.75rem] bg-accent-stone text-cream-300 border border-black/15 overflow-hidden shadow-2xl">
+          <div class="px-6 py-4 bg-[#100D0B] border-b border-white/5 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3 h-3 rounded-full bg-[#EF4444]/90 inline-block"></span>
+              <span class="w-3 h-3 rounded-full bg-[#F59E0B]/90 inline-block"></span>
+              <span class="w-3 h-3 rounded-full bg-[#10B981]/90 inline-block"></span>
+              <span class="ml-2 text-xs font-mono font-medium text-white/45">root@sbyuxD:~# (bun)</span>
             </div>
 
-            <button onclick="rescanConsole()" class="px-3 py-1 rounded-full bg-white/5 hover:bg-white/10 text-[11px] font-mono text-white/70 hover:text-white flex items-center gap-1.5 transition-colors">
-              <i data-lucide="rotate-cw" class="w-3 h-3 text-accent-clayLight"></i>
+            <button
+              type="button"
+              onclick="rescanConsole()"
+              class="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-[11px] font-mono text-white/75 hover:text-white flex items-center gap-2 transition-colors"
+            >
+              <svg class="w-3.5 h-3.5 text-accent-clayLight" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+              </svg>
               <span>Re-scan</span>
             </button>
           </div>
 
-          <div id="terminal-body" class="p-6 font-mono text-xs leading-relaxed bg-accent-stone text-white/70 min-h-[190px] max-h-[250px] overflow-y-auto space-y-1 select-text">
-            <div id="terminal-content"></div>
+          <div
+            id="terminal-body"
+            class="p-6 sm:p-8 font-mono text-xs leading-7 bg-accent-stone text-white/75 min-h-[210px] max-h-[270px] overflow-y-auto space-y-1.5 select-text"
+          >
+            <div id="terminal-content" class="space-y-1.5"></div>
             <div id="terminal-active-line" class="text-white">
               <span id="terminal-typing"></span><span class="terminal-cursor"></span>
             </div>
           </div>
         </div>
 
-        <div class="p-8 sm:p-10 bg-cream-card border border-cream-border squircle flex flex-col items-center justify-center text-center space-y-4 shadow-sm">
-          <div class="max-w-md space-y-1">
-            <h3 class="font-serif text-2xl text-cream-title">Dokumentasi API</h3>
-            <p class="text-xs text-cream-muted font-medium">Jelajahi seluruh koleksi endpoint per-kategori dan jalankan testing langsung.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div class="p-6 sm:p-7 surface-card flex flex-col justify-between gap-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-cream-muted">Server Latency</span>
+              <button
+                type="button"
+                onclick="checkLatency()"
+                class="p-2 rounded-xl bg-cream-100 hover:bg-cream-200 text-cream-body hover:text-cream-title transition-colors"
+                title="Cek Ulang Latency"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                  <path d="M3 3v5h5"/>
+                  <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                  <path d="M16 16h5v5"/>
+                </svg>
+              </button>
+            </div>
+            <div id="bottom-latency" class="text-3xl font-bold font-mono text-emerald-600 tracking-tight">...ms</div>
           </div>
 
-          <button onclick="smoothNavigate('docs')" class="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-2xl bg-accent-clay hover:bg-accent-clayHover text-white font-bold text-sm tracking-wide shadow-lg shadow-accent-clay/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
-            <span>DOCS</span>
-            <i data-lucide="arrow-right" class="w-4 h-4"></i>
-          </button>
+          <div class="p-6 sm:p-7 surface-card flex flex-col justify-between gap-3">
+            <span class="text-xs font-mono uppercase tracking-wider text-cream-muted">Total Endpoints</span>
+            <div id="stat-total" class="text-3xl font-bold font-mono text-cream-title tracking-tight">-</div>
+          </div>
+
+          <div class="p-6 sm:p-7 surface-card flex flex-col justify-between gap-3">
+            <span class="text-xs font-mono uppercase tracking-wider text-cream-muted">Total Kategori</span>
+            <div id="stat-categories" class="text-3xl font-bold font-mono text-accent-clay tracking-tight">-</div>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="p-5 bg-cream-card border border-cream-border squircle shadow-sm">
-            <div class="text-xs font-mono text-cream-muted mb-1">Server Latency</div>
-            <div id="bottom-latency" class="text-2xl font-bold font-mono text-emerald-600">...ms</div>
+        <div class="p-8 sm:p-12 surface-card flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+          <div class="space-y-2 max-w-lg">
+            <h2 class="font-serif text-2xl sm:text-3xl text-cream-title">Eksplorasi Katalog Endpoint</h2>
+            <p class="text-sm text-cream-body leading-relaxed">
+              Buka dokumentasi interaktif untuk melihat daftar parameter, struktur rute per kategori, dan menguji respons JSON secara langsung dari browser.
+            </p>
           </div>
 
-          <div class="p-5 bg-cream-card border border-cream-border squircle shadow-sm">
-            <div class="text-xs font-mono text-cream-muted mb-1">Total Endpoints</div>
-            <div id="stat-total" class="text-2xl font-bold font-mono text-cream-title">-</div>
-          </div>
-
-          <div class="p-5 bg-cream-card border border-cream-border squircle shadow-sm flex items-center justify-between">
-            <div>
-              <div class="text-xs font-mono text-cream-muted mb-1">Total Kategori</div>
-              <div id="stat-categories" class="text-2xl font-bold font-mono text-accent-clay">-</div>
-            </div>
-            <button onclick="checkLatency()" class="p-2 rounded-xl bg-cream-100 hover:bg-cream-200 text-cream-title transition-colors" title="Check Latency">
-              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-            </button>
-          </div>
+          <button
+            type="button"
+            onclick="smoothNavigate('docs')"
+            class="shrink-0 inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-accent-clay hover:bg-accent-clayHover text-white font-bold text-sm tracking-wide shadow-lg shadow-accent-clay/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <span>Buka Dokumentasi</span>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/>
+              <path d="m12 5 7 7-7 7"/>
+            </svg>
+          </button>
         </div>
       </section>
     </div>
 
-    <div id="view-docs" class="view-transition view-leave hidden space-y-8">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-cream-border">
-        <div class="flex items-center gap-3">
-          <button onclick="smoothNavigate('home')" class="p-2 rounded-xl bg-cream-card hover:bg-cream-200 border border-cream-border text-cream-title transition-colors" title="Kembali ke Home">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    <div id="view-docs" class="view-section view-hidden hidden space-y-10">
+
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-cream-border">
+        <div class="flex items-start sm:items-center gap-4">
+          <button
+            type="button"
+            onclick="smoothNavigate('home')"
+            class="mt-1 sm:mt-0 p-3 rounded-2xl bg-cream-card hover:bg-cream-200 border border-cream-border text-cream-title transition-colors shrink-0"
+            title="Kembali ke Beranda"
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m12 19-7-7 7-7"/>
+              <path d="M19 12H5"/>
+            </svg>
           </button>
-          <div>
-            <h2 class="font-serif text-3xl text-cream-title">Katalog Endpoint</h2>
-            <p class="text-xs text-cream-muted font-medium">Buka folder kategori untuk melihat daftar endpoint di dalamnya</p>
+          <div class="space-y-1">
+            <h2 class="font-serif text-3xl sm:text-4xl text-cream-title tracking-tight">Katalog Endpoint</h2>
+            <p class="text-xs sm:text-sm text-cream-muted font-medium">
+              Pilih kategori atau cari rute untuk menjalankan pengujian langsung
+            </p>
           </div>
         </div>
 
-        <div class="relative w-full sm:w-72">
-          <i data-lucide="search" class="w-4 h-4 text-cream-muted absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-          <input type="text" id="search-input" placeholder="Cari endpoint..." class="w-full pl-10 pr-4 py-2 text-xs font-mono bg-cream-card border border-cream-border rounded-xl text-cream-title placeholder-cream-muted focus:border-accent-clay transition-colors" />
+        <div class="relative w-full md:w-80">
+          <svg class="w-4 h-4 text-cream-muted absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Cari nama, rute, atau deskripsi..."
+            class="w-full pl-11 pr-4 py-3 text-xs font-mono bg-cream-card border border-cream-border rounded-2xl text-cream-title placeholder-cream-muted focus:border-accent-clay transition-colors shadow-sm"
+          />
         </div>
       </div>
 
-      <div class="flex items-center gap-2 overflow-x-auto pb-2" id="category-tabs"></div>
+      <div class="flex items-center gap-2.5 overflow-x-auto pb-2" id="category-tabs"></div>
 
-      <div id="endpoint-container" class="space-y-4">
-        <div class="text-center py-16 text-cream-muted text-xs font-mono">
-          Memuat katalog...
+      <div id="endpoint-container" class="space-y-5">
+        <div class="text-center py-20 text-cream-muted text-xs font-mono">
+          Memuat katalog endpoint...
         </div>
       </div>
     </div>
+
   </main>
 
-  <div id="modal-backdrop" class="fixed inset-0 bg-[#161311]/50 backdrop-blur-md z-50 opacity-0 pointer-events-none transition-opacity duration-350" onclick="closeModal()"></div>
+  <div
+    id="modal-backdrop"
+    class="fixed inset-0 bg-[#151210]/55 backdrop-blur-sm z-50 opacity-0 pointer-events-none transition-opacity duration-250"
+    onclick="closeModal()"
+  ></div>
 
-  <div id="modal-sheet" class="modal-sheet fixed inset-x-0 bottom-0 z-50 max-w-2xl mx-auto max-h-[88vh] bg-cream-card border-t sm:border-x sm:rounded-t-3xl border-cream-border flex flex-col shadow-2xl">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-cream-border bg-cream-50 sm:rounded-t-3xl">
-      <div class="flex items-center gap-3">
-        <span id="modal-badge-method" class="px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-lg bg-accent-clay/10 text-accent-clay border border-accent-clay/20">GET</span>
-        <h3 id="modal-title" class="font-bold text-sm text-cream-title font-sans">Endpoint Title</h3>
+  <div
+    id="modal-sheet"
+    class="modal-sheet fixed inset-x-0 bottom-0 z-50 max-w-2xl mx-auto max-h-[88vh] bg-cream-card border-t sm:border-x sm:rounded-t-[2rem] border-cream-border flex flex-col shadow-2xl"
+  >
+    <div class="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-cream-border bg-cream-50 sm:rounded-t-[2rem]">
+      <div class="flex items-center gap-3 min-w-0">
+        <span id="modal-badge-method" class="px-2.5 py-1 text-[10px] font-mono font-bold rounded-lg bg-accent-clay/10 text-accent-clay border border-accent-clay/20 shrink-0">GET</span>
+        <h3 id="modal-title" class="font-bold text-base text-cream-title font-mono truncate">Endpoint</h3>
       </div>
-      <button onclick="closeModal()" class="p-1.5 rounded-lg text-cream-muted hover:text-cream-title hover:bg-cream-200 transition-colors">
-        <i data-lucide="x" class="w-4 h-4"></i>
+      <button
+        type="button"
+        onclick="closeModal()"
+        class="p-2 rounded-xl text-cream-muted hover:text-cream-title hover:bg-cream-200 transition-colors"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 6 6 18"/>
+          <path d="m6 6 12 12"/>
+        </svg>
       </button>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-6 space-y-6">
-      <div>
-        <label class="block text-xs font-bold text-cream-muted mb-1 uppercase font-mono">Deskripsi</label>
-        <p id="modal-desc" class="text-xs text-cream-body leading-relaxed font-medium">-</p>
+    <div class="flex-1 overflow-y-auto p-6 sm:p-8 space-y-7">
+      <div class="space-y-1.5">
+        <label class="block text-[11px] font-bold text-cream-muted uppercase tracking-wider font-mono">Deskripsi</label>
+        <p id="modal-desc" class="text-sm text-cream-body leading-relaxed font-medium">-</p>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold text-cream-muted mb-1 uppercase font-mono">Path Route</label>
-        <div class="flex items-center justify-between p-3 rounded-2xl bg-cream-100 border border-cream-border font-mono text-xs text-accent-clay">
-          <span id="modal-path">/</span>
-          <button onclick="copyRoute()" class="text-cream-muted hover:text-cream-title transition-colors" title="Salin Route">
-            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+      <div class="space-y-2">
+        <label class="block text-[11px] font-bold text-cream-muted uppercase tracking-wider font-mono">Path Route</label>
+        <div class="flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl bg-cream-100 border border-cream-border font-mono text-xs text-accent-clay">
+          <span id="modal-path" class="truncate">/</span>
+          <button
+            type="button"
+            onclick="copyRoute()"
+            class="px-2.5 py-1 rounded-lg bg-cream-card border border-cream-border text-cream-body hover:text-cream-title text-[11px] font-mono flex items-center gap-1.5 transition-colors shrink-0"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+            </svg>
+            <span>Salin</span>
           </button>
         </div>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold text-cream-muted mb-2 uppercase font-mono">Input Parameter</label>
-        <form id="modal-form" onsubmit="executeRequest(event)" class="space-y-4">
-          <div id="modal-inputs" class="space-y-3"></div>
+      <div class="space-y-3">
+        <label class="block text-[11px] font-bold text-cream-muted uppercase tracking-wider font-mono">Parameter Input</label>
+        <form id="modal-form" onsubmit="executeRequest(event)" class="space-y-5">
+          <div id="modal-inputs" class="space-y-4"></div>
 
-          <button type="submit" id="btn-submit" class="w-full py-3 px-4 rounded-2xl bg-accent-clay hover:bg-accent-clayHover text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md shadow-accent-clay/20">
-            <span id="btn-submit-icon"><i data-lucide="send" class="w-3.5 h-3.5"></i></span>
+          <button
+            type="submit"
+            id="btn-submit"
+            class="w-full py-3.5 px-5 rounded-2xl bg-accent-clay hover:bg-accent-clayHover text-white text-xs font-bold tracking-wide flex items-center justify-center gap-2.5 transition-all shadow-md shadow-accent-clay/20"
+          >
+            <span id="btn-submit-icon" class="flex items-center">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m22 2-7 20-4-9-9-4Z"/>
+                <path d="M22 2 11 13"/>
+              </svg>
+            </span>
             <span id="btn-submit-text">Jalankan Request</span>
           </button>
         </form>
       </div>
 
-      <div id="modal-response-wrapper" class="space-y-2 hidden">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <label class="text-xs font-bold text-cream-muted font-mono">Response Payload</label>
-            <span id="modal-status-pill" class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">200 OK</span>
-            <span id="modal-time-pill" class="text-[10px] font-mono text-cream-muted">0ms</span>
+      <div id="modal-response-wrapper" class="space-y-3 hidden pt-2 border-t border-cream-border">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <label class="text-[11px] font-bold text-cream-muted uppercase tracking-wider font-mono">Response</label>
+            <span id="modal-status-pill" class="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">200 OK</span>
+            <span id="modal-time-pill" class="text-[11px] font-mono text-cream-muted">0ms</span>
           </div>
-          <button onclick="copyResponse()" class="text-xs text-accent-clay hover:text-accent-clayHover font-semibold flex items-center gap-1 transition-colors">
-            <i data-lucide="copy" class="w-3 h-3"></i>
+          <button
+            type="button"
+            onclick="copyResponse()"
+            class="text-xs text-accent-clay hover:text-accent-clayHover font-semibold flex items-center gap-1.5 transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+            </svg>
             <span>Salin JSON</span>
           </button>
         </div>
 
-        <div class="rounded-2xl bg-cream-50 border border-cream-border p-4 overflow-x-auto max-h-64 select-text">
+        <div class="rounded-2xl bg-cream-50 border border-cream-border p-5 overflow-x-auto max-h-80 select-text">
           <pre id="modal-response-body" class="font-mono text-xs leading-relaxed text-cream-title"></pre>
         </div>
       </div>
@@ -384,7 +586,8 @@
   </div>
 
   <footer class="border-t border-cream-border py-8 px-6 bg-cream-50 mt-auto">
-    <div class="max-w-5xl mx-auto flex items-center justify-center text-xs font-mono text-cream-muted">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-mono text-cream-muted">
+      <div>WolfApi Engine</div>
       <div>© 2026 sbyuxD. All rights reserved.</div>
     </div>
   </footer>
@@ -392,171 +595,157 @@
   <script>
     let registry = {};
     let activeEndpoint = null;
-    let currentCategory = 'all';
-    let isTerminalTyping = false;
-    let rawResponseText = '';
+    let currentCategory = "all";
+    let bootSequenceId = 0;
+    let rawResponseText = "";
     const openFolders = new Set();
     let isIslandExpanded = false;
 
-    window.addEventListener('pointerdown', (e) => {
-      const ripple = document.createElement('div');
-      ripple.className = 'touch-ripple';
-      const size = 36;
-      ripple.style.width = `${size}px`;
-      ripple.style.height = `${size}px`;
-      ripple.style.left = `${e.clientX - size / 2}px`;
-      ripple.style.top = `${e.clientY - size / 2}px`;
-      document.body.appendChild(ripple);
-
-      requestAnimationFrame(() => {
-        ripple.style.transform = 'scale(2.6)';
-        ripple.style.opacity = '0';
-      });
-
-      setTimeout(() => ripple.remove(), 450);
-    });
+    const islandContainer = document.getElementById("island-container");
+    const islandTrigger = document.getElementById("island-trigger");
 
     function toggleDynamicIsland() {
-      const container = document.getElementById('island-container');
-      const menu = document.getElementById('island-menu');
-      const chevron = document.getElementById('island-chevron');
-
       isIslandExpanded = !isIslandExpanded;
-
-      if (isIslandExpanded) {
-        container.classList.add('expanded');
-        container.style.width = window.innerWidth < 640 ? '300px' : '340px';
-        menu.classList.remove('hidden');
-        menu.classList.add('flex');
-        chevron.style.transform = 'rotate(180deg)';
-      } else {
-        closeIsland();
-      }
+      islandContainer.classList.toggle("expanded", isIslandExpanded);
+      islandTrigger.setAttribute("aria-expanded", String(isIslandExpanded));
     }
 
     function closeIsland() {
-      const container = document.getElementById('island-container');
-      const menu = document.getElementById('island-menu');
-      const chevron = document.getElementById('island-chevron');
-
+      if (!isIslandExpanded) return;
       isIslandExpanded = false;
-      container.classList.remove('expanded');
-      container.style.width = '';
-      menu.classList.remove('flex');
-      menu.classList.add('hidden');
-      chevron.style.transform = 'rotate(0deg)';
+      islandContainer.classList.remove("expanded");
+      islandTrigger.setAttribute("aria-expanded", "false");
     }
+
+    islandTrigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleDynamicIsland();
+    });
+
+    document.addEventListener("pointerdown", (e) => {
+      if (isIslandExpanded && !islandContainer.contains(e.target)) {
+        closeIsland();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (activeEndpoint) closeModal();
+        if (isIslandExpanded) closeIsland();
+      }
+    });
 
     function handleIslandNav(view) {
       closeIsland();
       smoothNavigate(view);
     }
 
-    window.addEventListener('click', (e) => {
-      const container = document.getElementById('island-container');
-      if (isIslandExpanded && !container.contains(e.target)) {
-        closeIsland();
-      }
-    });
-
     function smoothNavigate(targetView) {
-      const homeView = document.getElementById('view-home');
-      const docsView = document.getElementById('view-docs');
+      const homeView = document.getElementById("view-home");
+      const docsView = document.getElementById("view-docs");
 
-      const current = targetView === 'docs' ? homeView : docsView;
-      const destination = targetView === 'docs' ? docsView : homeView;
+      const showingDocs = targetView === "docs";
+      const outgoing = showingDocs ? homeView : docsView;
+      const incoming = showingDocs ? docsView : homeView;
 
-      current.classList.remove('view-enter');
-      current.classList.add('view-leave');
+      if (!incoming.classList.contains("hidden")) return;
+
+      outgoing.classList.remove("view-visible");
+      outgoing.classList.add("view-hidden");
 
       setTimeout(() => {
-        current.classList.add('hidden');
-        destination.classList.remove('hidden');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        outgoing.classList.add("hidden");
+        incoming.classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
 
-        setTimeout(() => {
-          destination.classList.remove('view-leave');
-          destination.classList.add('view-enter');
-        }, 50);
-      }, 250);
+        requestAnimationFrame(() => {
+          incoming.classList.remove("view-hidden");
+          incoming.classList.add("view-visible");
+        });
+      }, 180);
     }
 
     const notify = (icon, title) => {
       Swal.fire({
         icon,
         title,
-        position: 'center',
+        position: "center",
         showConfirmButton: false,
-        timer: 1600,
-        customClass: { popup: 'custom-swal-center' },
-        iconColor: icon === 'success' ? '#059669' : '#C05C2B'
+        timer: 1400,
+        customClass: { popup: "custom-swal-center" },
+        iconColor: icon === "success" ? "#059669" : "#C05C2B"
       });
     };
 
     const formatCodeHighlight = (data) => {
-      let json = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
-      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (match) => {
-        let cls = 'json-number';
-        if (/^"/.test(match)) {
-          cls = /:$/.test(match) ? 'json-key' : 'json-string';
-        } else if (/true|false/.test(match)) {
-          cls = 'json-boolean';
-        } else if (/null/.test(match)) {
-          cls = 'json-null';
-        }
-        return `<span class="${cls}">${match}</span>`;
-      });
-    };
-
-    const typeTerminalLine = (text, speed = 16) => {
-      return new Promise((resolve) => {
-        const typingEl = document.getElementById('terminal-typing');
-        const terminalBody = document.getElementById('terminal-body');
-        let index = 0;
-        typingEl.textContent = '';
-
-        const interval = setInterval(() => {
-          if (index < text.length) {
-            typingEl.textContent += text.charAt(index);
-            index++;
-            terminalBody.scrollTop = terminalBody.scrollHeight;
-          } else {
-            clearInterval(interval);
-            setTimeout(resolve, 35);
+      let json = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      json = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      return json.replace(
+        /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        (match) => {
+          let cls = "json-number";
+          if (/^"/.test(match)) {
+            cls = /:$/.test(match) ? "json-key" : "json-string";
+          } else if (/true|false/.test(match)) {
+            cls = "json-boolean";
+          } else if (/null/.test(match)) {
+            cls = "json-null";
           }
-        }, speed);
+          return `<span class="${cls}">${match}</span>`;
+        }
+      );
+    };
+
+    const typeTerminalLine = (text, runId, step = 3) => {
+      return new Promise((resolve) => {
+        const typingEl = document.getElementById("terminal-typing");
+        let index = 0;
+        typingEl.textContent = "";
+
+        const tick = () => {
+          if (runId !== bootSequenceId) {
+            resolve(false);
+            return;
+          }
+          if (index < text.length) {
+            index = Math.min(text.length, index + step);
+            typingEl.textContent = text.slice(0, index);
+            requestAnimationFrame(tick);
+          } else {
+            resolve(true);
+          }
+        };
+
+        requestAnimationFrame(tick);
       });
     };
 
-    const commitTerminalLine = (colorClass = 'text-white/60') => {
-      const typingEl = document.getElementById('terminal-typing');
-      const contentEl = document.getElementById('terminal-content');
-      const terminalBody = document.getElementById('terminal-body');
+    const commitTerminalLine = (colorClass = "text-white/60") => {
+      const typingEl = document.getElementById("terminal-typing");
+      const contentEl = document.getElementById("terminal-content");
+      const terminalBody = document.getElementById("terminal-body");
 
-      const lineDiv = document.createElement('div');
+      const lineDiv = document.createElement("div");
       lineDiv.className = colorClass;
       lineDiv.textContent = typingEl.textContent;
       contentEl.appendChild(lineDiv);
-      typingEl.textContent = '';
+      typingEl.textContent = "";
       terminalBody.scrollTop = terminalBody.scrollHeight;
     };
 
     const runConsoleBootSequence = async () => {
-      if (isTerminalTyping) return;
-      isTerminalTyping = true;
+      const runId = ++bootSequenceId;
+      const contentEl = document.getElementById("terminal-content");
+      contentEl.innerHTML = "";
 
-      const contentEl = document.getElementById('terminal-content');
-      contentEl.innerHTML = '';
+      if (!(await typeTerminalLine("[  OK  ] Bun Runtime Engine Initialized", runId, 3))) return;
+      commitTerminalLine("text-emerald-400 font-mono");
 
-      await typeTerminalLine('[  OK  ] Native Node.js ESM Runtime Initialized', 8);
-      commitTerminalLine('text-emerald-400 font-mono');
+      if (!(await typeTerminalLine("[  OK  ] Hot-Reload Plugin Registry Synchronized", runId, 3))) return;
+      commitTerminalLine("text-emerald-400 font-mono");
 
-      await typeTerminalLine('[  OK  ] Synchronized Router Engine with Plugin Watcher', 8);
-      commitTerminalLine('text-emerald-400 font-mono');
-
-      await typeTerminalLine('root@sbyuxD:~# wolfapi-cli scan --active', 12);
-      commitTerminalLine('text-white font-bold');
+      if (!(await typeTerminalLine("root@sbyuxD:~# wolfapi scan --routes", runId, 2))) return;
+      commitTerminalLine("text-white font-bold");
 
       const categories = Object.keys(registry);
       let totalLoaded = 0;
@@ -565,46 +754,43 @@
         const list = registry[cat] || [];
         for (const ep of list) {
           totalLoaded++;
-          const method = (ep.method && ep.method[0]) || 'GET';
-          await typeTerminalLine(`[LOADED] ${method} ${ep.endpoint}`, 5);
-          commitTerminalLine('text-accent-clayLight font-mono');
+          const method = (ep.method && ep.method[0]) || "GET";
+          if (!(await typeTerminalLine(`[READY] ${method.padEnd(4, " ")} ${ep.endpoint}`, runId, 4))) return;
+          commitTerminalLine("text-accent-clayLight font-mono");
         }
       }
 
-      await typeTerminalLine(`[INFO] ${totalLoaded} endpoints loaded across ${categories.length} categories`, 8);
-      commitTerminalLine('text-white font-bold');
+      if (!(await typeTerminalLine(`[INFO] ${totalLoaded} endpoints active across ${categories.length} categories`, runId, 3))) return;
+      commitTerminalLine("text-white font-bold");
 
-      await typeTerminalLine('root@sbyuxD:~# ready', 8);
-      commitTerminalLine('text-white/40');
-
-      isTerminalTyping = false;
+      if (!(await typeTerminalLine("root@sbyuxD:~# listening", runId, 2))) return;
+      commitTerminalLine("text-white/40");
     };
 
     async function rescanConsole() {
       await fetchEndpoints();
-      await runConsoleBootSequence();
-      notify('info', 'Registry disinkronisasi');
+      runConsoleBootSequence();
+      notify("info", "Registry disinkronisasi");
     }
 
     async function fetchEndpoints() {
       try {
         const res = await fetch(`/api/endpoints?_t=${Date.now()}`, {
-          cache: "no-store",
-          headers: { "Pragma": "no-cache", "Cache-Control": "no-cache" }
+          cache: "no-store"
         });
         const data = await res.json();
 
         if (data.status && data.result) {
           registry = data.result.endpoints || {};
-          document.getElementById('stat-total').textContent = data.result.total || 0;
-          document.getElementById('stat-categories').textContent = Object.keys(registry).length;
+          document.getElementById("stat-total").textContent = data.result.total || 0;
+          document.getElementById("stat-categories").textContent = Object.keys(registry).length;
 
           buildCategoryTabs();
-          renderEndpoints();
+          renderEndpoints(document.getElementById("search-input").value.trim().toLowerCase());
         }
-      } catch (err) {
-        document.getElementById('endpoint-container').innerHTML = `
-          <div class="text-center py-12 text-rose-600 text-xs font-mono">
+      } catch {
+        document.getElementById("endpoint-container").innerHTML = `
+          <div class="text-center py-16 text-rose-600 text-xs font-mono">
             Gagal memuat daftar endpoint dari server.
           </div>
         `;
@@ -612,18 +798,31 @@
     }
 
     function buildCategoryTabs() {
-      const container = document.getElementById('category-tabs');
-      container.innerHTML = `
-        <button onclick="filterCategory('all')" class="px-4 py-2 rounded-xl text-xs font-bold transition-all ${currentCategory === 'all' ? 'bg-accent-clay text-white shadow-sm' : 'bg-cream-card text-cream-body hover:text-cream-title border border-cream-border'}">
-          Semua Folder
-        </button>
-      `;
+      const container = document.getElementById("category-tabs");
+      container.innerHTML = "";
 
-      Object.keys(registry).forEach(cat => {
-        const btn = document.createElement('button');
+      const allBtn = document.createElement("button");
+      allBtn.type = "button";
+      allBtn.onclick = () => filterCategory("all");
+      allBtn.className = `px-4 py-2.5 rounded-2xl text-xs font-bold transition-all shrink-0 ${
+        currentCategory === "all"
+          ? "bg-accent-clay text-white shadow-sm"
+          : "bg-cream-card text-cream-body hover:text-cream-title border border-cream-border"
+      }`;
+      allBtn.textContent = "Semua Folder";
+      container.appendChild(allBtn);
+
+      Object.keys(registry).forEach((cat) => {
+        const count = (registry[cat] || []).length;
+        const btn = document.createElement("button");
+        btn.type = "button";
         btn.onclick = () => filterCategory(cat);
-        btn.className = `px-4 py-2 rounded-xl text-xs font-bold capitalize transition-all ${currentCategory === cat ? 'bg-accent-clay text-white shadow-sm' : 'bg-cream-card text-cream-body hover:text-cream-title border border-cream-border'}`;
-        btn.textContent = cat;
+        btn.className = `px-4 py-2.5 rounded-2xl text-xs font-bold capitalize transition-all shrink-0 flex items-center gap-2 ${
+          currentCategory === cat
+            ? "bg-accent-clay text-white shadow-sm"
+            : "bg-cream-card text-cream-body hover:text-cream-title border border-cream-border"
+        }`;
+        btn.innerHTML = `<span>${cat}</span><span class="text-[10px] font-mono opacity-75">(${count})</span>`;
         container.appendChild(btn);
       });
     }
@@ -631,13 +830,12 @@
     function filterCategory(cat) {
       currentCategory = cat;
       buildCategoryTabs();
-      renderEndpoints(document.getElementById('search-input').value.trim().toLowerCase());
+      renderEndpoints(document.getElementById("search-input").value.trim().toLowerCase());
     }
 
     function toggleFolder(cat) {
       const content = document.getElementById(`folder-content-${cat}`);
       const chevron = document.getElementById(`folder-chevron-${cat}`);
-      const icon = document.getElementById(`folder-icon-${cat}`);
 
       if (!content) return;
 
@@ -645,61 +843,63 @@
 
       if (isNowOpen) {
         openFolders.add(cat);
-        content.classList.add('open');
-        chevron.style.transform = 'rotate(180deg)';
-        icon.setAttribute('data-lucide', 'folder-open');
+        content.classList.add("open");
+        if (chevron) chevron.style.transform = "rotate(180deg)";
       } else {
         openFolders.delete(cat);
-        content.classList.remove('open');
-        chevron.style.transform = 'rotate(0deg)';
-        icon.setAttribute('data-lucide', 'folder');
+        content.classList.remove("open");
+        if (chevron) chevron.style.transform = "rotate(0deg)";
       }
-      lucide.createIcons();
     }
 
-    function renderEndpoints(searchQuery = '') {
-      const container = document.getElementById('endpoint-container');
-      container.innerHTML = '';
+    function renderEndpoints(searchQuery = "") {
+      const container = document.getElementById("endpoint-container");
+      container.innerHTML = "";
 
       const categories = Object.keys(registry);
       let count = 0;
 
-      categories.forEach(cat => {
-        if (currentCategory !== 'all' && currentCategory !== cat) return;
+      categories.forEach((cat) => {
+        if (currentCategory !== "all" && currentCategory !== cat) return;
 
-        const endpoints = registry[cat].filter(ep => {
+        const endpoints = (registry[cat] || []).filter((ep) => {
           if (!searchQuery) return true;
-          return ep.name.toLowerCase().includes(searchQuery) ||
-                 ep.endpoint.toLowerCase().includes(searchQuery) ||
-                 ep.description.toLowerCase().includes(searchQuery);
+          const name = (ep.name || "").toLowerCase();
+          const route = (ep.endpoint || "").toLowerCase();
+          const desc = (ep.description || "").toLowerCase();
+          return name.includes(searchQuery) || route.includes(searchQuery) || desc.includes(searchQuery);
         });
 
         if (endpoints.length === 0) return;
         count += endpoints.length;
 
-        if (currentCategory === 'all' && !searchQuery) {
+        if (currentCategory === "all" && !searchQuery) {
           const isOpen = openFolders.has(cat);
-          const folderBox = document.createElement('div');
-          folderBox.className = 'folder-wrapper bg-cream-card border border-cream-border overflow-hidden shadow-sm';
+          const folderBox = document.createElement("div");
+          folderBox.className = "folder-wrapper overflow-hidden";
 
           folderBox.innerHTML = `
-            <div onclick="toggleFolder('${cat}')" class="p-5 flex items-center justify-between cursor-pointer hover:bg-cream-50 transition-colors select-none">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-200 text-accent-clay flex items-center justify-center shrink-0">
-                  <i data-lucide="${isOpen ? 'folder-open' : 'folder'}" id="folder-icon-${cat}" class="w-5 h-5"></i>
+            <div onclick="toggleFolder('${cat}')" class="p-6 sm:px-7 flex items-center justify-between cursor-pointer hover:bg-cream-50/80 transition-colors select-none">
+              <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-2xl bg-orange-50 border border-orange-200/80 text-accent-clay flex items-center justify-center shrink-0">
+                  <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
+                  </svg>
                 </div>
-                <div>
+                <div class="space-y-0.5">
                   <h3 class="text-sm font-bold uppercase tracking-wider text-cream-title font-mono">${cat}</h3>
-                  <span class="text-xs text-cream-muted font-medium">${endpoints.length} endpoints</span>
+                  <p class="text-xs text-cream-muted font-medium">${endpoints.length} endpoint tersedia</p>
                 </div>
               </div>
-              <div class="w-8 h-8 rounded-full bg-cream-100 flex items-center justify-center text-cream-muted">
-                <i data-lucide="chevron-down" id="folder-chevron-${cat}" class="w-4 h-4 transition-transform duration-300" style="transform: ${isOpen ? 'rotate(180deg)' : 'rotate(0deg)'}"></i>
+              <div class="w-9 h-9 rounded-full bg-cream-100 flex items-center justify-center text-cream-muted">
+                <svg id="folder-chevron-${cat}" class="w-4 h-4 transition-transform duration-250" style="transform: ${isOpen ? "rotate(180deg)" : "rotate(0deg)"}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m6 9 6 6 6-6"/>
+                </svg>
               </div>
             </div>
-            <div id="folder-content-${cat}" class="folder-content ${isOpen ? 'open' : ''}">
+            <div id="folder-content-${cat}" class="folder-content ${isOpen ? "open" : ""}">
               <div class="overflow-hidden">
-                <div class="p-5 pt-1 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-cream-border/60" id="folder-grid-${cat}"></div>
+                <div class="px-6 pb-6 pt-5 sm:px-7 sm:pb-7 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 border-t border-cream-border/70" id="folder-grid-${cat}"></div>
               </div>
             </div>
           `;
@@ -707,68 +907,69 @@
           container.appendChild(folderBox);
 
           const grid = document.getElementById(`folder-grid-${cat}`);
-          endpoints.forEach((ep, i) => {
-            const cardEl = createEndpointCard(ep);
-            cardEl.style.animationDelay = `${i * 45}ms`;
-            grid.appendChild(cardEl);
+          endpoints.forEach((ep) => {
+            grid.appendChild(createEndpointCard(ep));
           });
         } else {
-          const block = document.createElement('div');
-          block.className = 'space-y-4';
+          const block = document.createElement("div");
+          block.className = "space-y-4 pt-2";
 
           block.innerHTML = `
-            <div class="flex items-center gap-2 pb-1.5 border-b border-cream-border">
-              <span class="w-2 h-2 rounded-full bg-accent-clay"></span>
+            <div class="flex items-center gap-2.5 pb-2 border-b border-cream-border">
+              <span class="w-2.5 h-2.5 rounded-full bg-accent-clay"></span>
               <h3 class="text-xs font-bold uppercase tracking-wider text-cream-title font-mono">${cat}</h3>
-              <span class="text-[11px] text-cream-muted font-mono">(${endpoints.length})</span>
+              <span class="text-xs text-cream-muted font-mono">(${endpoints.length})</span>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="grid-${cat}"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5" id="grid-${cat}"></div>
           `;
 
           container.appendChild(block);
 
           const grid = document.getElementById(`grid-${cat}`);
-          endpoints.forEach((ep, i) => {
-            const cardEl = createEndpointCard(ep);
-            cardEl.style.animationDelay = `${i * 45}ms`;
-            grid.appendChild(cardEl);
+          endpoints.forEach((ep) => {
+            grid.appendChild(createEndpointCard(ep));
           });
         }
       });
 
       if (count === 0) {
         container.innerHTML = `
-          <div class="text-center py-16 text-cream-muted text-xs font-mono">
-            Tidak ada endpoint yang cocok dengan pencarian.
+          <div class="text-center py-20 surface-card text-cream-muted text-xs font-mono">
+            Tidak ada endpoint yang cocok dengan pencarian Anda.
           </div>
         `;
       }
-
-      lucide.createIcons();
     }
 
     function createEndpointCard(ep) {
-      const card = document.createElement('div');
-      card.className = 'p-5 bg-cream-50 border border-cream-border card-item cursor-pointer flex flex-col justify-between';
+      const card = document.createElement("div");
+      card.className = "p-6 endpoint-card cursor-pointer flex flex-col justify-between gap-5";
       card.onclick = () => openModal(ep);
 
-      const method = (ep.method && ep.method[0]) || 'GET';
-      const methodBadge = method === 'POST' ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-accent-clay bg-orange-50 border-orange-200';
+      const methods = Array.isArray(ep.method) && ep.method.length ? ep.method : ["GET"];
+      const primaryMethod = methods[0];
+      const badgeStyle =
+        primaryMethod === "POST"
+          ? "text-blue-700 bg-blue-50 border-blue-200"
+          : "text-accent-clay bg-orange-50 border-orange-200";
 
       card.innerHTML = `
-        <div>
-          <div class="flex items-center justify-between gap-2 mb-2">
-            <h4 class="text-sm font-bold text-cream-title">${ep.name}</h4>
-            <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border ${methodBadge}">${method}</span>
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between gap-3">
+            <h4 class="text-sm font-bold text-cream-title font-mono truncate">${ep.name}</h4>
+            <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold border shrink-0 ${badgeStyle}">${methods.join(" / ")}</span>
           </div>
-          <p class="text-xs text-cream-body leading-relaxed mb-4 font-medium">${ep.description || 'Tanpa deskripsi tambahan.'}</p>
+          <p class="text-xs text-cream-body leading-relaxed font-medium line-clamp-2">${ep.description || "Tanpa deskripsi tambahan."}</p>
         </div>
-        <div class="flex items-center justify-between pt-3 border-t border-cream-border/70 text-xs font-mono text-cream-muted">
-          <span class="truncate max-w-[200px] text-accent-clay font-medium">${ep.endpoint}</span>
-          <div class="flex items-center gap-1 text-cream-body hover:text-accent-clay">
-            <span>Tes</span>
-            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-          </div>
+        <div class="flex items-center justify-between pt-3.5 border-t border-cream-border/70 text-xs font-mono">
+          <span class="truncate max-w-[220px] text-accent-clay font-medium">${ep.endpoint}</span>
+          <span class="inline-flex items-center gap-1.5 text-cream-body font-sans font-bold text-xs group-hover:text-accent-clay">
+            <span>Uji</span>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/>
+              <path d="m12 5 7 7-7 7"/>
+            </svg>
+          </span>
         </div>
       `;
       return card;
@@ -776,66 +977,72 @@
 
     function openModal(ep) {
       activeEndpoint = ep;
-      const modal = document.getElementById('modal-sheet');
-      const backdrop = document.getElementById('modal-backdrop');
+      const modal = document.getElementById("modal-sheet");
+      const backdrop = document.getElementById("modal-backdrop");
 
-      document.getElementById('modal-title').textContent = ep.name;
-      document.getElementById('modal-desc').textContent = ep.description || '-';
-      document.getElementById('modal-path').textContent = ep.endpoint;
+      document.getElementById("modal-title").textContent = ep.name;
+      document.getElementById("modal-desc").textContent = ep.description || "-";
+      document.getElementById("modal-path").textContent = ep.endpoint;
 
-      const method = (ep.method && ep.method[0]) || 'GET';
-      document.getElementById('modal-badge-method').textContent = method;
+      const method = (ep.method && ep.method[0]) || "GET";
+      document.getElementById("modal-badge-method").textContent = method;
 
-      const inputsContainer = document.getElementById('modal-inputs');
-      inputsContainer.innerHTML = '';
+      const inputsContainer = document.getElementById("modal-inputs");
+      inputsContainer.innerHTML = "";
 
       const params = ep.params || {};
       const keys = Object.keys(params);
 
       if (keys.length === 0) {
         inputsContainer.innerHTML = `
-          <div class="text-xs text-cream-muted p-3.5 rounded-2xl bg-cream-100 border border-cream-border font-mono">
+          <div class="text-xs text-cream-muted px-4 py-3.5 rounded-2xl bg-cream-100 border border-cream-border font-mono">
             Endpoint ini tidak memerlukan parameter input.
           </div>
         `;
       } else {
-        keys.forEach(key => {
-          const item = params[key];
-          const isRequired = typeof item === 'object' ? item.required : false;
-          const desc = typeof item === 'object' ? item.description : '';
+        keys.forEach((key) => {
+          const item = params[key] || {};
+          const isRequired = Boolean(item.required);
+          const desc = item.description || "";
+          const defaultVal = item.default !== undefined ? item.default : "";
 
-          const group = document.createElement('div');
-          group.className = 'space-y-1.5';
+          const group = document.createElement("div");
+          group.className = "space-y-2";
           group.innerHTML = `
-            <div class="flex items-center justify-between text-xs">
-              <label class="font-bold text-cream-title font-mono">${key} ${isRequired ? '<span class="text-rose-600">*</span>' : ''}</label>
-              <span class="text-[10px] text-cream-muted font-medium">${desc}</span>
+            <div class="flex items-center justify-between gap-2 text-xs">
+              <label class="font-bold text-cream-title font-mono">${key} ${isRequired ? '<span class="text-rose-600">*</span>' : ""}</label>
+              <span class="text-[11px] text-cream-muted font-medium">${desc}</span>
             </div>
-            <input type="text" name="${key}" ${isRequired ? 'required' : ''} placeholder="Nilai untuk ${key}..." class="w-full px-3.5 py-2.5 text-xs bg-cream-100 border border-cream-border rounded-xl text-cream-title placeholder-cream-muted focus:border-accent-clay transition-colors font-mono" />
+            <input
+              type="text"
+              name="${key}"
+              value="${String(defaultVal)}"
+              ${isRequired ? "required" : ""}
+              placeholder="Masukkan nilai ${key}..."
+              class="w-full px-4 py-3 text-xs bg-cream-50 border border-cream-border rounded-2xl text-cream-title placeholder-cream-muted focus:border-accent-clay focus:bg-white transition-colors font-mono"
+            />
           `;
           inputsContainer.appendChild(group);
         });
       }
 
-      document.getElementById('modal-response-wrapper').classList.add('hidden');
-      document.body.style.overflow = 'hidden';
+      document.getElementById("modal-response-wrapper").classList.add("hidden");
+      document.body.style.overflow = "hidden";
 
-      backdrop.classList.remove('opacity-0', 'pointer-events-none');
-      backdrop.classList.add('opacity-100');
-
-      modal.classList.add('active');
-      lucide.createIcons();
+      backdrop.classList.remove("opacity-0", "pointer-events-none");
+      backdrop.classList.add("opacity-100");
+      modal.classList.add("active");
     }
 
     function closeModal() {
-      const modal = document.getElementById('modal-sheet');
-      const backdrop = document.getElementById('modal-backdrop');
+      const modal = document.getElementById("modal-sheet");
+      const backdrop = document.getElementById("modal-backdrop");
 
-      modal.classList.remove('active');
-      backdrop.classList.remove('opacity-100');
-      backdrop.classList.add('opacity-0', 'pointer-events-none');
+      modal.classList.remove("active");
+      backdrop.classList.remove("opacity-100");
+      backdrop.classList.add("opacity-0", "pointer-events-none");
 
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
       activeEndpoint = null;
     }
 
@@ -843,41 +1050,38 @@
       e.preventDefault();
       if (!activeEndpoint) return;
 
-      const submitBtn = document.getElementById('btn-submit');
-      const submitText = document.getElementById('btn-submit-text');
-      const submitIcon = document.getElementById('btn-submit-icon');
-      const responseWrapper = document.getElementById('modal-response-wrapper');
-      const responseBody = document.getElementById('modal-response-body');
-      const statusPill = document.getElementById('modal-status-pill');
-      const timePill = document.getElementById('modal-time-pill');
+      const submitBtn = document.getElementById("btn-submit");
+      const submitText = document.getElementById("btn-submit-text");
+      const responseWrapper = document.getElementById("modal-response-wrapper");
+      const responseBody = document.getElementById("modal-response-body");
+      const statusPill = document.getElementById("modal-status-pill");
+      const timePill = document.getElementById("modal-time-pill");
 
       submitBtn.disabled = true;
-      submitBtn.classList.add('opacity-60');
-      submitText.textContent = 'Memproses Request...';
-      submitIcon.innerHTML = '<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i>';
-      lucide.createIcons();
+      submitBtn.classList.add("opacity-60");
+      submitText.textContent = "Memproses Request...";
 
       const formData = new FormData(e.target);
       const queryParams = new URLSearchParams();
       const bodyPayload = {};
 
       for (const [key, val] of formData.entries()) {
-        if (val.trim()) {
-          queryParams.append(key, val.trim());
-          bodyPayload[key] = val.trim();
+        const trimmed = String(val).trim();
+        if (trimmed) {
+          queryParams.append(key, trimmed);
+          bodyPayload[key] = trimmed;
         }
       }
 
-      const method = (activeEndpoint.method && activeEndpoint.method[0]) || 'GET';
+      const method = (activeEndpoint.method && activeEndpoint.method[0]) || "GET";
       let url = activeEndpoint.endpoint;
-
       const options = { method };
 
-      if (method === 'GET') {
+      if (method === "GET") {
         const qs = queryParams.toString();
         if (qs) url += `?${qs}`;
       } else {
-        options.headers = { 'Content-Type': 'application/json' };
+        options.headers = { "Content-Type": "application/json" };
         options.body = JSON.stringify(bodyPayload);
       }
 
@@ -886,79 +1090,96 @@
       try {
         const response = await fetch(url, options);
         const duration = Math.round(performance.now() - start);
-        const json = await response.json();
+        const contentType = response.headers.get("content-type") || "";
 
-        rawResponseText = JSON.stringify(json, null, 2);
-
-        statusPill.textContent = `${response.status} ${response.statusText || 'OK'}`;
-        statusPill.className = response.ok 
-          ? 'text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200'
-          : 'text-[10px] font-mono px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200';
-
+        statusPill.textContent = `${response.status} ${response.statusText || "OK"}`;
+        statusPill.className = response.ok
+          ? "text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200"
+          : "text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200";
         timePill.textContent = `${duration}ms`;
-        responseBody.innerHTML = formatCodeHighlight(json);
-        responseWrapper.classList.remove('hidden');
 
-        if (response.ok) {
-          notify('success', `Berhasil (${response.status})`);
+        if (contentType.includes("application/json")) {
+          const json = await response.json();
+          rawResponseText = JSON.stringify(json, null, 2);
+          responseBody.innerHTML = formatCodeHighlight(json);
+          responseWrapper.classList.remove("hidden");
+
+          if (response.ok) {
+            notify("success", `Berhasil (${response.status})`);
+          } else {
+            notify("error", json.message || "Request Gagal");
+          }
+        } else if (contentType.startsWith("image/")) {
+          const blob = await response.blob();
+          const imgUrl = URL.createObjectURL(blob);
+          rawResponseText = url;
+          responseBody.innerHTML = `<img src="${imgUrl}" alt="Response Media" class="max-h-64 rounded-xl mx-auto object-contain" />`;
+          responseWrapper.classList.remove("hidden");
+          notify("success", "Media berhasil dimuat");
         } else {
-          notify('error', json.message || 'Request Gagal');
+          const text = await response.text();
+          rawResponseText = text;
+          responseBody.textContent = text;
+          responseWrapper.classList.remove("hidden");
         }
       } catch (err) {
         const duration = Math.round(performance.now() - start);
         const errorObj = { status: false, message: err.message };
         rawResponseText = JSON.stringify(errorObj, null, 2);
 
-        statusPill.textContent = 'Error';
-        statusPill.className = 'text-[10px] font-mono px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200';
+        statusPill.textContent = "Error";
+        statusPill.className = "text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200";
         timePill.textContent = `${duration}ms`;
         responseBody.innerHTML = formatCodeHighlight(errorObj);
-        responseWrapper.classList.remove('hidden');
+        responseWrapper.classList.remove("hidden");
 
-        notify('error', err.message || 'Gagal mengeksekusi request');
+        notify("error", err.message || "Gagal mengeksekusi request");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.classList.remove('opacity-60');
-        submitText.textContent = 'Jalankan Request';
-        submitIcon.innerHTML = '<i data-lucide="send" class="w-3.5 h-3.5"></i>';
-        lucide.createIcons();
+        submitBtn.classList.remove("opacity-60");
+        submitText.textContent = "Jalankan Request";
       }
     }
 
     function copyRoute() {
       if (!activeEndpoint) return;
       navigator.clipboard.writeText(window.location.origin + activeEndpoint.endpoint);
-      notify('info', 'Route disalin');
+      notify("info", "Route disalin");
     }
 
     function copyResponse() {
       if (rawResponseText) {
         navigator.clipboard.writeText(rawResponseText);
-        notify('info', 'JSON disalin');
+        notify("info", "Respons disalin");
       }
     }
 
     async function checkLatency() {
-      const bottomDisplay = document.getElementById('bottom-latency');
+      const bottomDisplay = document.getElementById("bottom-latency");
       const start = performance.now();
       try {
-        await fetch('/tools/ping');
+        const res = await fetch(`/tools/ping?_t=${Date.now()}`, { cache: "no-store" });
+        if (!res.ok) throw new Error("Ping failed");
         const duration = Math.round(performance.now() - start);
         bottomDisplay.textContent = `${duration}ms`;
       } catch {
-        bottomDisplay.textContent = 'Offline';
+        bottomDisplay.textContent = "Offline";
       }
     }
 
+    let searchDebounce = null;
+    document.getElementById("search-input").addEventListener("input", (e) => {
+      clearTimeout(searchDebounce);
+      const val = e.target.value.trim().toLowerCase();
+      searchDebounce = setTimeout(() => {
+        renderEndpoints(val);
+      }, 80);
+    });
+
     window.addEventListener("DOMContentLoaded", async () => {
-      lucide.createIcons();
       await fetchEndpoints();
       checkLatency();
-      await runConsoleBootSequence();
-
-      document.getElementById('search-input').addEventListener('input', (e) => {
-        renderEndpoints(e.target.value.trim().toLowerCase());
-      });
+      runConsoleBootSequence();
     });
   </script>
 </body>
