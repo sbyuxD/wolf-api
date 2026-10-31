@@ -5,70 +5,74 @@ import express from "express";
 import cors from "cors";
 import {
   plugins,
+  ensurePluginsLoaded,
   loadAllPlugins,
-  resolveSingleRouteOnDemand,
+  resolvePluginRoute,
   sendSuccess,
   sendError,
   extractAndValidateInput,
+  buildCacheKey,
   getCache,
-  setCache
+  setCache,
+  createCombinedSignal
 } from "./function.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
+app.disable("x-powered-by");
 app.set("json spaces", 2);
 
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 
+app.use(
+  express.static(path.resolve(__dirname, "../public"), {
+    maxAge: "1h",
+    etag: true
+  })
+);
+
+app.use(
+  "/media",
+  express.static(path.resolve(__dirname, "media"), {
+    maxAge: "1d",
+    etag: true
+  })
+);
+
 app.use((req, res, next) => {
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
-  res.setHeader("Surrogate-Control", "no-store");
 
-  const originalSend = res.send;
-  res.send = function (body) {
-    if (
-      typeof body === "string" &&
-      body.length > 1024 &&
-      req.headers["accept-encoding"] &&
-      req.headers["accept-encoding"].includes("gzip") &&
-      !res.getHeader("Content-Encoding")
-    ) {
-      res.setHeader("Content-Encoding", "gzip");
-      res.removeHeader("Content-Length");
-      zlib.gzip(Buffer.from(body), (err, zipped) => {
-        if (!err) {
-          originalSend.call(this, zipped);
-        } else {
-          originalSend.call(this, body);
-        }
-      });
-      return res;
+  const originalJson = res.json.bind(res);
+  res.json = (payload) => {
+    const rawBody = JSON.stringify(payload, null, 2);
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+
+    const acceptEncoding = req.headers["accept-encoding"] || "";
+    if (rawBody.length > 1024 && acceptEncoding.includes("gzip") && !res.getHeader("Content-Encoding")) {
+      try {
+        const compressed = zlib.gzipSync(Buffer.from(rawBody, "utf-8"));
+        res.setHeader("Content-Encoding", "gzip");
+        res.setHeader("Content-Length", String(compressed.length));
+        return res.end(compressed);
+      } catch {}
     }
-    return originalSend.call(this, body);
+
+    return res.send(rawBody);
   };
 
   next();
 });
 
-try {
-  app.use(express.static(path.resolve(__dirname, "../public")));
-  app.use("/media", express.static(path.resolve(__dirname, "media")));
-} catch {}
-
-let initialized = false;
 app.use(async (req, res, next) => {
-  if (!initialized) {
+  if (plugins.size === 0) {
     try {
-      await loadAllPlugins();
-    } catch (err) {
-      console.error("[Init Error]:", err.message);
-    }
-    initialized = true;
+      await ensurePluginsLoaded();
+    } catch {}
   }
   next();
 });
@@ -78,47 +82,58 @@ app.get("/api/endpoints", async (req, res) => {
     await loadAllPlugins();
   } catch {}
 
-  const endpoints = {};
+  const grouped = {};
+  let totalEndpoints = 0;
 
-  for (const [routePath, data] of plugins.entries()) {
-    const category = data.category || "general";
+  const sortedEntries = [...plugins.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 
-    if (!endpoints[category]) {
-      endpoints[category] = [];
+  for (const [routePath, item] of sortedEntries) {
+    const category = item.category || "general";
+    if (!grouped[category]) {
+      grouped[category] = [];
     }
 
-    endpoints[category].push({
-      name: data.name,
-      category: data.category,
+    grouped[category].push({
+      name: item.name,
+      category: item.category,
+      categories: item.categories,
       endpoint: routePath,
-      method: data.method,
-      description: data.description,
-      params: data.params
+      method: item.method,
+      description: item.description,
+      params: item.params
     });
+
+    totalEndpoints++;
   }
 
   return sendSuccess(res, {
-    total: plugins.size,
-    endpoints
+    total: totalEndpoints,
+    endpoints: grouped
+  });
+});
+
+app.get("/tools/ping", (req, res, next) => {
+  if (plugins.has("/tools/ping")) {
+    return next();
+  }
+  return sendSuccess(res, {
+    status: "online",
+    runtime: typeof Bun !== "undefined" ? `Bun v${Bun.version}` : `Node ${process.version}`,
+    uptime: Math.floor(process.uptime()),
+    timestamp: Date.now()
   });
 });
 
 app.all("/:category/:plugin(*)", async (req, res) => {
-  const routePath = `/${req.params.category}/${req.params.plugin}`.toLowerCase();
-  let target = plugins.get(routePath);
+  const target = await resolvePluginRoute(req.params.category, req.params.plugin);
 
   if (!target) {
-    try {
-      target = await resolveSingleRouteOnDemand(req.params.category, req.params.plugin);
-    } catch {}
+    const attemptedPath = `/${req.params.category}/${req.params.plugin}`.toLowerCase();
+    return sendError(res, `Endpoint '${attemptedPath}' tidak ditemukan`, 404);
   }
 
-  if (!target) {
-    return sendError(res, `Endpoint '${routePath}' not found`, 404);
-  }
-
-  if (!target.method.includes(req.method)) {
-    return sendError(res, `Method ${req.method} not allowed`, 405);
+  if (!target.method.includes(req.method.toUpperCase())) {
+    return sendError(res, `Method ${req.method} tidak diizinkan pada endpoint ini`, 405);
   }
 
   const { input, error } = extractAndValidateInput(target.params, req);
@@ -126,44 +141,59 @@ app.all("/:category/:plugin(*)", async (req, res) => {
     return sendError(res, error, 400);
   }
 
-  const cacheKey = `${req.method}:${req.originalUrl}`;
-  if (target.cache && req.method === "GET") {
-    const cachedResult = getCache(cacheKey);
-    if (cachedResult !== null) {
-      return sendSuccess(res, cachedResult);
+  req.input = input;
+
+  const isCacheable = Boolean(target.cache && req.method === "GET");
+  const cacheKey = isCacheable ? buildCacheKey(target.path, input) : null;
+
+  if (isCacheable && cacheKey) {
+    const cachedData = getCache(cacheKey);
+    if (cachedData !== null) {
+      return sendSuccess(res, cachedData);
     }
   }
 
+  const clientDisconnectController = new AbortController();
+  const onClientClose = () => {
+    if (!res.writableEnded) {
+      clientDisconnectController.abort(new Error("Client closed connection"));
+    }
+  };
+  req.on("close", onClientClose);
+
+  const { signal, cleanup } = createCombinedSignal(
+    target.timeout || 30000,
+    clientDisconnectController.signal
+  );
+
+  req.signal = signal;
+
   try {
-    const clientAbortController = new AbortController();
-    req.on("close", () => {
-      clientAbortController.abort();
-    });
-
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Request execution timed out")), target.timeout || 60000);
-    });
-
-    const executionPromise = target.execute(req, res, {
+    const context = {
       input,
       query: req.query || {},
       body: req.body || {},
       params: req.params || {},
-      signal: clientAbortController.signal
-    });
+      signal
+    };
 
-    const result = await Promise.race([executionPromise, timeoutPromise]);
+    const result = await target.run(req, res, context);
 
     if (!res.headersSent && result !== undefined) {
-      if (target.cache && req.method === "GET") {
+      if (isCacheable && cacheKey) {
         setCache(cacheKey, result, target.cache);
       }
       return sendSuccess(res, result);
     }
   } catch (err) {
     if (!res.headersSent) {
-      return sendError(res, err.message || "Internal Server Error", 500);
+      const isTimeout = err?.name === "AbortError" || /timed out/i.test(err?.message || "");
+      const statusCode = isTimeout ? 504 : err?.statusCode || 500;
+      return sendError(res, err?.message || "Internal Server Error", statusCode);
     }
+  } finally {
+    cleanup();
+    req.off("close", onClientClose);
   }
 });
 
